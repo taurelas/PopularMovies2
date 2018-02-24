@@ -4,7 +4,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 /**
  * Created by Matt on 24/02/2018.
@@ -12,7 +15,7 @@ import android.widget.TextView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
-    String[] data;
+    private String[] data;
 
     RecyclerViewAdapter(String[] data) {
         this.data = data;
@@ -28,7 +31,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.text.setText(data[position]);
+        Picasso.with(holder.thumbnail.getContext()).load(data[position]).into(holder.thumbnail);
     }
 
     @Override
@@ -36,13 +39,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return data.length;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView text;
+        ImageView thumbnail;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
               super(itemView);
-              text = itemView.findViewById(R.id.text);
+              thumbnail = itemView.findViewById(R.id.imageView);
         }
     }
 
