@@ -3,9 +3,8 @@ package com.leadinsource.popularmovies1;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
+import android.content.res.Resources;
 import android.os.AsyncTask;
-
-import java.util.List;
 
 /**
  * ViewModel for MainActivity
@@ -13,7 +12,34 @@ import java.util.List;
 
 public class MainActivityViewModel extends ViewModel {
 
+    private static final int MOST_POPULAR = 1;
+    private static final int HIGHEST_RATED = 2;
+    private int sortOrder = MOST_POPULAR;
+    private MutableLiveData<String> sortOrderString;
     MovieRepository movieRepository;
+    private Resources resources;
+
+    MainActivityViewModel(Resources resources) {
+        this.resources = resources;
+    }
+
+    LiveData<String> getSortOrder() {
+        if(sortOrderString==null) {
+            sortOrderString = new MutableLiveData<>();
+        }
+        updateSortOrderString();
+
+        return sortOrderString;
+    }
+
+    private void updateSortOrderString() {
+        if(sortOrder==MOST_POPULAR) {
+            sortOrderString.postValue(resources.getString(R.string.sort_by_popularity));
+        } else {
+            sortOrderString.postValue(resources.getString(R.string.sort_by_rating));
+        }
+    }
+
 
     private MutableLiveData<String[]> data;
     public LiveData<String[]> getData() {
@@ -24,6 +50,7 @@ public class MainActivityViewModel extends ViewModel {
 
         return data;
     }
+
 
     private void initializeData() {
         // TODO normally we will fetch the data here from internet/ sqlite db
@@ -63,5 +90,10 @@ public class MainActivityViewModel extends ViewModel {
             }
         }.execute();
 
+    }
+
+    void switchSorting() {
+        sortOrder = (sortOrder==MOST_POPULAR) ? HIGHEST_RATED : MOST_POPULAR;
+        updateSortOrderString();
     }
 }
