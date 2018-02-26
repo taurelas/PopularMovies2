@@ -9,15 +9,17 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 /**
- * Created by Matt on 24/02/2018.
+ * MainActivity's Recycler View Adapter
  */
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
-    private String[] data;
+    private List<String> data;
 
-    RecyclerViewAdapter(String[] data) {
+    RecyclerViewAdapter(List<String> data) {
         this.data = data;
     }
 
@@ -31,12 +33,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Picasso.with(holder.thumbnail.getContext()).load(data[position]).into(holder.thumbnail);
+        Picasso.with(holder.thumbnail.getContext()).load(data.get(position)).into(holder.thumbnail);
     }
 
     @Override
     public int getItemCount() {
-        return data.length;
+        return data.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

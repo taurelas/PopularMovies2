@@ -1,19 +1,14 @@
 package com.leadinsource.popularmovies1;
 
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.leadinsource.popularmovies1.databinding.ActivityMainBinding;
-
-import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this, new MainActivityVMF(getResources())).get(MainActivityViewModel.class);
 
-        viewModel.getData().observe(this, data -> {
+        viewModel.getImageUrls().observe(this, data -> {
             binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
             binding.recyclerView.setAdapter(new RecyclerViewAdapter(data));
         });
