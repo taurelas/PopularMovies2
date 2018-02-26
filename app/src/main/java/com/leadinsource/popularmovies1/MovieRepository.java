@@ -8,16 +8,19 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Matt on 24/02/2018.
+ * Single source of truth for the app
  */
 
-public class MovieRepository {
+class MovieRepository {
+
+    private static final String API_KEY = BuildConfig.API_KEY;
+
 
     LiveData<List<String>> fetchMovies() {
 
         MutableLiveData<List<String>> movies = new MutableLiveData<>();
 
-        movies.setValue(new ArrayList<String>(Arrays.asList("a", "b", "c", "d","e", "f")));
+        movies.setValue(new ArrayList<>(Arrays.asList("a", "b", "c", "d","e", "f")));
 
         return movies;
     }

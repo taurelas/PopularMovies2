@@ -9,6 +9,12 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // A correct API key needs to be provided in gradle.properties
+        // API_KEY = "right here"
+        // or change the last parameter in the line below
+
+        buildConfigField("String", "API_KEY", API_KEY)
     }
     buildTypes {
         release {
