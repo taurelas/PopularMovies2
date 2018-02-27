@@ -2,14 +2,10 @@ package com.leadinsource.popularmovies1;
 
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.leadinsource.popularmovies1.model.Movie;
 import com.squareup.picasso.Picasso;
@@ -54,7 +50,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView thumbnail;
+        final ImageView thumbnail;
 
         ViewHolder(View itemView) {
               super(itemView);

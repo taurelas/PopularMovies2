@@ -17,9 +17,9 @@ import java.util.List;
 
 class MainActivityViewModel extends ViewModel {
 
-    private SortOrder sortOrder;
-    private MovieRepository movieRepository;
-    private Resources resources;
+    private final SortOrder sortOrder;
+    private final MovieRepository movieRepository;
+    private final Resources resources;
 
     MainActivityViewModel(Resources resources) {
         this.resources = resources;
@@ -86,8 +86,8 @@ class MainActivityViewModel extends ViewModel {
         private static final int MOST_POPULAR = 1;
         private static final int HIGHEST_RATED = 2;
 
-        private MutableLiveData<Integer> current;
-        private MutableLiveData<String> currentText;
+        private final MutableLiveData<Integer> current;
+        private final MutableLiveData<String> currentText;
         private final String sortByRatingText;
         private final String sortByPopularityText;
 

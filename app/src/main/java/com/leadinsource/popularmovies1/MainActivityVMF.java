@@ -9,7 +9,7 @@ import android.support.annotation.NonNull;
  * Factory for ViewModel with injected Resources reference.
  */
 
-public class MainActivityVMF implements ViewModelProvider.Factory {
+class MainActivityVMF implements ViewModelProvider.Factory {
 
     private final Resources resources;
 
@@ -34,6 +34,7 @@ public class MainActivityVMF implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if(modelClass.isAssignableFrom(MainActivityViewModel.class)) {
+            //noinspection unchecked
             return (T) new MainActivityViewModel(resources);
         }
 
