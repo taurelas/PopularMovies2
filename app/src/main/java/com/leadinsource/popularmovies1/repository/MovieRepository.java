@@ -47,6 +47,7 @@ public class MovieRepository {
         call.enqueue(new Callback<MovieDbResponse>() {
             @Override
             public void onResponse(@NonNull Call<MovieDbResponse> call, @NonNull Response<MovieDbResponse> response) {
+                //noinspection HardCodedStringLiteral
                 Log.d(TAG, "Response status code: "+ response.code());
 
                 if(!response.isSuccessful()) {

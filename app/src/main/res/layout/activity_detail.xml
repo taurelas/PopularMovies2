@@ -12,44 +12,44 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="@dimen/title_margin"
+            android:layout_marginTop="@dimen/title_margin"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            app:layout_constraintStart_toEndOf="@+id/ivPoster"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Movie title"
-            android:layout_marginLeft="8dp" />
+            android:layout_marginLeft="@dimen/title_margin" />
 
         <ImageView
             android:id="@+id/ivPoster"
             android:layout_width="wrap_content"
-            android:layout_height="240dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="@dimen/poster_height"
+            android:layout_marginStart="@dimen/image_margin_start"
+            android:layout_marginTop="@dimen/margin_below_title"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/movie_poster"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle"
             app:srcCompat="@mipmap/ic_launcher"
-            android:layout_marginLeft="8dp"
-            android:contentDescription="@string/movie_poster" />
+            android:layout_marginLeft="@dimen/image_margin_start" />
 
         <TextView
             android:id="@+id/tvReleaseDateLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="@dimen/margin_text_left"
+            android:layout_marginTop="@dimen/margin_below_title"
             android:text="@string/release_date"
             app:layout_constraintStart_toEndOf="@+id/ivPoster"
             app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-            android:layout_marginLeft="8dp" />
+            android:layout_marginLeft="@dimen/margin_text_left" />
 
         <TextView
             android:id="@+id/tvReleaseDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/margin_below_title"
             app:layout_constraintStart_toEndOf="@+id/tvReleaseDateLabel"
             app:layout_constraintTop_toBottomOf="@+id/tvTitle"
             tools:text="21.08.2017"
@@ -59,35 +59,35 @@
             android:id="@+id/tvVoteAverageLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="@dimen/margin_text_left"
+            android:layout_marginTop="@dimen/text_gap"
             android:text="@string/vote_average"
             app:layout_constraintStart_toEndOf="@+id/ivPoster"
             app:layout_constraintTop_toBottomOf="@+id/tvReleaseDateLabel"
-            android:layout_marginLeft="8dp" />
+            android:layout_marginLeft="@dimen/margin_text_left" />
 
         <TextView
             android:id="@+id/tvVoteAverage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="@dimen/text_gap"
             app:layout_constraintBaseline_toBaselineOf="@+id/tvVoteAverageLabel"
             app:layout_constraintStart_toEndOf="@+id/tvVoteAverageLabel"
             tools:text="4.75"
-            android:layout_marginLeft="16dp" />
+            android:layout_marginLeft="@dimen/text_gap" />
 
         <TextView
             android:id="@+id/tvSynopsis"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="@dimen/margin_text_left"
+            android:layout_marginTop="@dimen/text_gap"
             android:textAlignment="viewStart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ivPoster"
             app:layout_constraintTop_toBottomOf="@+id/tvVoteAverageLabel"
             tools:text="Description description description"
-            android:layout_marginLeft="8dp"
+            android:layout_marginLeft="@dimen/margin_text_left"
             android:gravity="start" />
     </android.support.constraint.ConstraintLayout>
 </layout>
