@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this, new MainActivityVMF(getResources())).get(MainActivityViewModel.class);
 
-        viewModel.getMovies().observe(this, data -> {
+        viewModel.getMoviesData().observe(this, data -> {
             if(binding.recyclerView.getAdapter()== null) {
                 binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
                 adapter = new RecyclerViewAdapter(data);
