@@ -1,6 +1,7 @@
 package com.leadinsource.popularmovies1;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.leadinsource.popularmovies1.databinding.ActivityMainBinding;
+import com.leadinsource.popularmovies1.model.Movie;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +31,13 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getMoviesData().observe(this, data -> {
             if(binding.recyclerView.getAdapter()== null) {
                 binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-                adapter = new RecyclerViewAdapter(data);
+
+                adapter = new RecyclerViewAdapter(data, movie -> {
+                    Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                    intent.putExtra(DetailActivity.EXTRA_MOVIE,movie);
+                    startActivity(intent);
+                });
+
                 binding.recyclerView.setAdapter(adapter);
             } else {
                 adapter.updateData(data);

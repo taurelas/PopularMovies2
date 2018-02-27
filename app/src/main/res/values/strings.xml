@@ -4,7 +4,7 @@
     <string name="sort_by_popularity">Sort by popularity</string>
     <string name="sort_by_rating">Sort by rating</string>
     <string name="movie_poster">Movie Poster</string>
-    <string name="release_date">Release date</string>
+    <string name="release_date">Released</string>
     <string name="vote_average">Vote average</string>
 
 </resources>
