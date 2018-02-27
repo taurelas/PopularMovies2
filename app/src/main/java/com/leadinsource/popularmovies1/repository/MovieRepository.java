@@ -37,17 +37,13 @@ public class MovieRepository {
             movies = new MutableLiveData<>();
         }
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        MoviesWebService service = retrofit.create(MoviesWebService.class);
-
-        Call<MovieDbResponse> call = service.listPopularMovies(API_KEY);
+        Call<MovieDbResponse> call = getMoviesWebService().listPopularMovies(API_KEY);
 
         //async request
+        return enqueue(call);
+    }
 
+    private LiveData<List<Movie>> enqueue(Call<MovieDbResponse> call) {
         call.enqueue(new Callback<MovieDbResponse>() {
             @Override
             public void onResponse(@NonNull Call<MovieDbResponse> call, @NonNull Response<MovieDbResponse> response) {
@@ -80,5 +76,27 @@ public class MovieRepository {
         });
 
         return movies;
+    }
+
+    private MoviesWebService getMoviesWebService() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        return retrofit.create(MoviesWebService.class);
+    }
+
+
+    public LiveData<List<Movie>> fetchTopRatedMovies() {
+        if(movies == null) {
+            movies = new MutableLiveData<>();
+        }
+
+        Call<MovieDbResponse> call = getMoviesWebService().listTopRatedMovies(API_KEY);
+
+        //async request
+        return enqueue(call);
+
     }
 }

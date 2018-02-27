@@ -17,64 +17,114 @@ import java.util.List;
 
 class MainActivityViewModel extends ViewModel {
 
-    private static final int MOST_POPULAR = 1;
-    private static final int HIGHEST_RATED = 2;
-    private int sortOrder = MOST_POPULAR;
-    private MutableLiveData<String> sortOrderString;
+    private SortOrder sortOrder;
     private MovieRepository movieRepository;
     private Resources resources;
-
-    private LiveData<List<Movie>> movies;
 
     MainActivityViewModel(Resources resources) {
         this.resources = resources;
         movieRepository = new MovieRepository();
+        sortOrder = new SortOrder();
     }
 
     LiveData<String> getSortOrder() {
-        if (sortOrderString == null) {
-            sortOrderString = new MutableLiveData<>();
-        }
-        updateSortOrderString();
-
-        return sortOrderString;
+        return sortOrder.getCurrentText();
     }
 
-    private void updateSortOrderString() {
-        if (sortOrder == MOST_POPULAR) {
-            sortOrderString.postValue(resources.getString(R.string.sort_by_popularity));
-        } else {
-            sortOrderString.postValue(resources.getString(R.string.sort_by_rating));
-        }
-    }
-
-    private static final String IMAGE_PATH = "http://image.tmdb.org/t/p/w185/";
     /**
      * Ferries data from MovieRepository, amending the url on-the-fly
      *
      * @return Observable LiveData with list of Movies from The Movie DB
      */
-     LiveData<List<Movie>> getMovies() {
-        if (movies == null) {
-            movies = Transformations.map(movieRepository.fetchPopularMovies(),
-                    input -> {
-                        for (Movie movie : input) {
-                            movie.poster_path = IMAGE_PATH.concat(movie.poster_path);
+    LiveData<List<Movie>> getMoviesData() {
 
-                        }
+        return Transformations.switchMap(sortOrder.getOrder(), input -> {
+            if (input == SortOrder.MOST_POPULAR) {
+                return getPopularMovies();
+            } else {
+                return getTopRatedMovies();
+            }
 
-                        return input;
-                    });
+        });
+    }
+
+    /**
+     * Get popular movies list from repository, amending the url on-the-fly
+     * @return LiveData object that can be observed by MainActivity
+     */
+    private LiveData<List<Movie>> getPopularMovies() {
+        return Transformations.map(movieRepository.fetchPopularMovies(),
+                this::fixImageUrls);
+    }
+
+    /**
+     * Get top rated movies list from repository, amending the url on-the-fly
+     * @return LiveData object that can be observed by MainActivity
+     */
+
+    private LiveData<List<Movie>> getTopRatedMovies() {
+        return Transformations.map(movieRepository.fetchTopRatedMovies(),
+                this::fixImageUrls);
+    }
+
+    private static final String IMAGE_PATH = "http://image.tmdb.org/t/p/w185/";
+
+    private List<Movie> fixImageUrls(List<Movie> movies) {
+        for (Movie movie : movies) {
+            movie.poster_path = IMAGE_PATH.concat(movie.poster_path);
         }
 
         return movies;
     }
 
-    /**
-     * Switching current sorting state and triggers LiveData update accordingly
-     */
     void switchSorting() {
-        sortOrder = (sortOrder == MOST_POPULAR) ? HIGHEST_RATED : MOST_POPULAR;
-        updateSortOrderString();
+        sortOrder.swap();
+    }
+
+
+    private class SortOrder {
+        private static final int MOST_POPULAR = 1;
+        private static final int HIGHEST_RATED = 2;
+
+        private MutableLiveData<Integer> current;
+        private MutableLiveData<String> currentText;
+        private final String sortByRatingText;
+        private final String sortByPopularityText;
+
+        SortOrder() {
+            current = new MutableLiveData<>();
+            current.setValue(MOST_POPULAR);
+
+            sortByRatingText = MainActivityViewModel.this.resources.getString(R.string.sort_by_rating);
+            sortByPopularityText = MainActivityViewModel.this.resources.getString(R.string.sort_by_popularity);
+            currentText = new MutableLiveData<>();
+            currentText.setValue(sortByRatingText);
+        }
+
+        void swap() {
+            if (current.getValue() == MOST_POPULAR) {
+                current.setValue(HIGHEST_RATED);
+            } else {
+                current.setValue(MOST_POPULAR);
+            }
+
+            swapText();
+        }
+
+        private void swapText() {
+            if (current.getValue() == MOST_POPULAR) {
+                currentText.setValue(sortByRatingText);
+            } else {
+                currentText.setValue(sortByPopularityText);
+            }
+        }
+
+        LiveData<String> getCurrentText() {
+            return currentText;
+        }
+
+        LiveData<Integer> getOrder() {
+            return current;
+        }
     }
 }
