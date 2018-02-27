@@ -2,10 +2,12 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:context="com.leadinsource.popularmovies1.DetailActivity">
 
         <TextView
@@ -50,10 +52,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="@dimen/margin_below_title"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tvReleaseDateLabel"
             app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-            tools:text="21.08.2017"
-            android:layout_marginLeft="16dp" />
+            tools:text="21.08.2017" />
 
         <TextView
             android:id="@+id/tvVoteAverageLabel"
@@ -90,4 +92,5 @@
             android:layout_marginLeft="@dimen/margin_text_left"
             android:gravity="start" />
     </android.support.constraint.ConstraintLayout>
+</ScrollView>
 </layout>

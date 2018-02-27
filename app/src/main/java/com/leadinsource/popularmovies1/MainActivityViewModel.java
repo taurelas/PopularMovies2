@@ -71,7 +71,7 @@ class MainActivityViewModel extends ViewModel {
 
     private List<Movie> fixImageUrls(List<Movie> movies) {
         for (Movie movie : movies) {
-            movie.poster_path = IMAGE_PATH.concat(movie.poster_path);
+            movie.posterPath = IMAGE_PATH.concat(movie.posterPath);
         }
 
         return movies;

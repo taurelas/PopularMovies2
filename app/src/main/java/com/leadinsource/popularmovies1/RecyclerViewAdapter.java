@@ -1,6 +1,5 @@
 package com.leadinsource.popularmovies1;
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +18,11 @@ import java.util.List;
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
     private List<Movie> data;
+    private RecyclerViewClickListener clickListener;
 
-    RecyclerViewAdapter(List<Movie> data) {
+    RecyclerViewAdapter(List<Movie> data, RecyclerViewClickListener clickListener) {
         this.data = data;
+        this.clickListener = clickListener;
     }
 
     @Override
@@ -34,7 +35,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Picasso.with(holder.thumbnail.getContext()).load(data.get(position).poster_path).into(holder.thumbnail);
+        Picasso.with(holder.thumbnail.getContext()).load(data.get(position).posterPath).into(holder.thumbnail);
 
     }
 
@@ -56,16 +57,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
               super(itemView);
               thumbnail = itemView.findViewById(R.id.ivPoster);
 
-              itemView.setOnClickListener(v -> {
-                  Intent intent = new Intent(v.getContext(), DetailActivity.class);
-                  Movie currentMovie = data.get(getAdapterPosition());
-                  intent.putExtra(DetailActivity.EXTRA_URL,currentMovie.poster_path);
-                  intent.putExtra(DetailActivity.EXTRA_RELEASE_DATE, currentMovie.release_date);
-                  intent.putExtra(DetailActivity.EXTRA_TITLE, currentMovie.title);
-                  intent.putExtra(DetailActivity.EXTRA_VOTE_AVG, currentMovie.vote_average);
-                  intent.putExtra(DetailActivity.EXTRA_SYNOPSIS, currentMovie.overview);
-                  v.getContext().startActivity(intent);
-              });
+              itemView.setOnClickListener(v -> clickListener.onItemClick(data.get(getAdapterPosition())));
         }
     }
 

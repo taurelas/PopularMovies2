@@ -6,15 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.leadinsource.popularmovies1.databinding.ActivityDetailBinding;
+import com.leadinsource.popularmovies1.model.Movie;
 import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_URL = "EXTRA_URL";
-    public static final String EXTRA_TITLE = "EXTRA_TITLE";
-    public static final String EXTRA_RELEASE_DATE = "EXTRA_RELEASE_DATE";
-    public static final String EXTRA_VOTE_AVG = "VOTE_AVG";
-    public static final String EXTRA_SYNOPSIS = "EXTRA_SYNOPISIS";
+    public static final String EXTRA_MOVIE = "EXTRA_MOVIE";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,16 +23,13 @@ public class DetailActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         if(intent!=null) {
-            String url = intent.getStringExtra(EXTRA_URL);
-            String title = intent.getStringExtra(EXTRA_TITLE);
-            String releaseDate = intent.getStringExtra(EXTRA_RELEASE_DATE);
-            String synopsis = intent.getStringExtra(EXTRA_SYNOPSIS);
-            float voteAverage = intent.getFloatExtra(EXTRA_VOTE_AVG, 0.0f);
-            Picasso.with(this).load(url).into(binding.ivPoster);
-            binding.tvTitle.setText(title);
-            binding.tvVoteAverage.setText(String.valueOf(voteAverage));
-            binding.tvReleaseDate.setText(releaseDate);
-            binding.tvSynopsis.setText(synopsis);
+            Movie movie = intent.getParcelableExtra(EXTRA_MOVIE);
+
+            Picasso.with(this).load(movie.posterPath).into(binding.ivPoster);
+            binding.tvTitle.setText(movie.title);
+            binding.tvVoteAverage.setText(String.valueOf(movie.voteAverage));
+            binding.tvReleaseDate.setText(movie.releaseDate);
+            binding.tvSynopsis.setText(movie.overview);
         }
     }
 }
