@@ -5,12 +5,10 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.content.res.Resources;
-import android.util.Log;
 
 import com.leadinsource.popularmovies1.model.Movie;
 import com.leadinsource.popularmovies1.repository.MovieRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,7 +24,7 @@ class MainActivityViewModel extends ViewModel {
     private MovieRepository movieRepository;
     private Resources resources;
 
-    private LiveData<List<String>> imageUrls;
+    private LiveData<List<Movie>> movies;
 
     MainActivityViewModel(Resources resources) {
         this.resources = resources;
@@ -50,30 +48,33 @@ class MainActivityViewModel extends ViewModel {
         }
     }
 
-     LiveData<List<String>> getImageUrls() {
-        if (imageUrls == null) {
-            //imageUrls = new MutableLiveData<>();
-            imageUrls = Transformations.map(movieRepository.fetchPopularMovies(),
+    private static final String IMAGE_PATH = "http://image.tmdb.org/t/p/w185/";
+    /**
+     * Ferries data from MovieRepository, amending the url on-the-fly
+     *
+     * @return Observable LiveData with list of Movies from The Movie DB
+     */
+     LiveData<List<Movie>> getMovies() {
+        if (movies == null) {
+            movies = Transformations.map(movieRepository.fetchPopularMovies(),
                     input -> {
-                        ArrayList<String> result = new ArrayList<>();
-
                         for (Movie movie : input) {
-                            String url = "http://image.tmdb.org/t/p/w185/" + movie.poster_path;
-                            result.add(url);
-                            Log.d("VM", url);
+                            movie.poster_path = IMAGE_PATH.concat(movie.poster_path);
+
                         }
 
-                        return result;
+                        return input;
                     });
         }
 
-
-        return imageUrls;
+        return movies;
     }
 
+    /**
+     * Switching current sorting state and triggers LiveData update accordingly
+     */
     void switchSorting() {
         sortOrder = (sortOrder == MOST_POPULAR) ? HIGHEST_RATED : MOST_POPULAR;
         updateSortOrderString();
     }
-
 }

@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private MainActivityViewModel viewModel;
     private MenuItem sortSwitch;
     private Menu menu;
+    private RecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +26,14 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this, new MainActivityVMF(getResources())).get(MainActivityViewModel.class);
 
-        viewModel.getImageUrls().observe(this, data -> {
-            binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-            binding.recyclerView.setAdapter(new RecyclerViewAdapter(data));
+        viewModel.getMovies().observe(this, data -> {
+            if(binding.recyclerView.getAdapter()== null) {
+                binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+                adapter = new RecyclerViewAdapter(data);
+                binding.recyclerView.setAdapter(adapter);
+            } else {
+                adapter.updateData(data);
+            }
         });
 
     }
