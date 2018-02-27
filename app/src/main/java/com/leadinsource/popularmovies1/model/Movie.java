@@ -7,10 +7,10 @@ import java.util.List;
  */
 
 public class Movie {
-    int vote_count;
+    public int vote_count;
     int id;
     boolean video;
-    float vote_average;
+    public float vote_average;
     public String title;
     float popularity;
     public String poster_path;
@@ -19,6 +19,6 @@ public class Movie {
     List<Integer> genre_ids;
     String backdrop_path;
     boolean adult;
-    String overview;
-    String release_date;
+    public String overview;
+    public String release_date;
 }

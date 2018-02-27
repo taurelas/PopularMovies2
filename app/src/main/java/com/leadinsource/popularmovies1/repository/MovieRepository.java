@@ -2,6 +2,7 @@ package com.leadinsource.popularmovies1.repository;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.leadinsource.popularmovies1.BuildConfig;
@@ -49,7 +50,7 @@ public class MovieRepository {
 
         call.enqueue(new Callback<MovieDbResponse>() {
             @Override
-            public void onResponse(Call<MovieDbResponse> call, Response<MovieDbResponse> response) {
+            public void onResponse(@NonNull Call<MovieDbResponse> call, @NonNull Response<MovieDbResponse> response) {
                 Log.d(TAG, "Response status code: "+ response.code());
 
                 if(!response.isSuccessful()) {
@@ -66,16 +67,13 @@ public class MovieRepository {
                 if(decodedResponse==null) return;
 
                 Log.d(TAG, "Successful response!");
-                for( Movie movie : decodedResponse.results) {
-                    Log.d("TAG", movie.title);
-                }
 
                 movies.postValue(decodedResponse.results);
 
             }
 
             @Override
-            public void onFailure(Call<MovieDbResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<MovieDbResponse> call, @NonNull Throwable t) {
                 Log.d(TAG, "onFailure");
                 Log.d(TAG, t.getMessage());
             }
