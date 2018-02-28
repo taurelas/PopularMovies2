@@ -5,6 +5,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.leadinsource.popularmovies2.BuildConfig;
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.net.MovieDbResponse;
@@ -13,6 +14,7 @@ import com.leadinsource.popularmovies2.net.MoviesWebService;
 import java.io.IOException;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -80,8 +82,14 @@ public class MovieRepository {
     }
 
     private MoviesWebService getMoviesWebService() {
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addNetworkInterceptor(new StethoInterceptor())
+                .build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
