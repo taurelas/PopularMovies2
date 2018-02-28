@@ -20,6 +20,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private List<Movie> data;
     private RecyclerViewClickListener clickListener;
 
+    public interface RecyclerViewClickListener {
+        void onItemClick(Movie movie);
+    }
+
+
     RecyclerViewAdapter(List<Movie> data, RecyclerViewClickListener clickListener) {
         this.data = data;
         this.clickListener = clickListener;

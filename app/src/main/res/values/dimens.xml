@@ -7,4 +7,5 @@
     <dimen name="margin_text_left">8dp</dimen>
     <dimen name="text_top_margin">8dp</dimen>
     <dimen name="text_gap">4dp</dimen>
+    <dimen name="trailer_elements_margin">16dp</dimen>
 </resources>

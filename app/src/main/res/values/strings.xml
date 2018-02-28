@@ -9,4 +9,8 @@
     <string name="show_favorites_movies">Show favorites</string>
     <string name="show_top_movies">Show top movies</string>
 
+    <string name="trailers">Trailers</string>
+    <string name="trailer_button">Trailer button</string>
+    <string name="share_button">Share Button</string>
+
 </resources>
