@@ -1,14 +1,14 @@
-package com.leadinsource.popularmovies1.repository;
+package com.leadinsource.popularmovies2.repository;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.leadinsource.popularmovies1.BuildConfig;
-import com.leadinsource.popularmovies1.model.Movie;
-import com.leadinsource.popularmovies1.net.MovieDbResponse;
-import com.leadinsource.popularmovies1.net.MoviesWebService;
+import com.leadinsource.popularmovies2.BuildConfig;
+import com.leadinsource.popularmovies2.model.Movie;
+import com.leadinsource.popularmovies2.net.MovieDbResponse;
+import com.leadinsource.popularmovies2.net.MoviesWebService;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,12 +1,12 @@
-package com.leadinsource.popularmovies1;
+package com.leadinsource.popularmovies2;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.leadinsource.popularmovies1.databinding.ActivityDetailBinding;
-import com.leadinsource.popularmovies1.model.Movie;
+import com.leadinsource.popularmovies2.databinding.ActivityDetailBinding;
+import com.leadinsource.popularmovies2.model.Movie;
 import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {

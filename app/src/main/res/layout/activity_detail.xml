@@ -8,7 +8,7 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context="com.leadinsource.popularmovies1.DetailActivity">
+        tools:context="com.leadinsource.popularmovies2.DetailActivity">
 
         <TextView
             android:id="@+id/tvTitle"
@@ -55,7 +55,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tvReleaseDateLabel"
             app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-            tools:text="21.08.2017" />
+            tools:text="21.08.2017"
+            android:layout_marginLeft="16dp" />
 
         <TextView
             android:id="@+id/tvVoteAverageLabel"

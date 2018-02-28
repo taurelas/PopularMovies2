@@ -1,4 +1,4 @@
-package com.leadinsource.popularmovies1;
+package com.leadinsource.popularmovies2;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

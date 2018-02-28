@@ -1,4 +1,4 @@
-package com.leadinsource.popularmovies1.net;
+package com.leadinsource.popularmovies2.net;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
