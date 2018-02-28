@@ -1,6 +1,6 @@
-package com.leadinsource.popularmovies1.net;
+package com.leadinsource.popularmovies2.net;
 
-import com.leadinsource.popularmovies1.model.Movie;
+import com.leadinsource.popularmovies2.model.Movie;
 
 import java.util.List;
 

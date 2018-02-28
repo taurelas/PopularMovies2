@@ -1,22 +1,24 @@
-package com.leadinsource.popularmovies1;
+package com.leadinsource.popularmovies2;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.leadinsource.popularmovies1.databinding.ActivityMainBinding;
-import com.leadinsource.popularmovies1.model.Movie;
+import com.leadinsource.popularmovies2.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private MainActivityViewModel viewModel;
     private MenuItem sortSwitch;
+    private MenuItem listSwitch;
     private Menu menu;
     private RecyclerViewAdapter adapter;
 
@@ -62,16 +64,28 @@ public class MainActivity extends AppCompatActivity {
 
         this.menu = menu;
         sortSwitch = menu.findItem(R.id.sort_switch);
-
+        listSwitch = menu.findItem(R.id.list_switch);
         observeSortOrder();
+        observeListType();
 
         return true;
+    }
+
+    private void observeListType() {
+        viewModel.getMovieListType().observe(this, text -> {
+            listSwitch.setTitle(text);
+            onPrepareOptionsMenu(menu);
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item == sortSwitch) {
             viewModel.switchSorting();
+        }
+
+        if(item == listSwitch) {
+            viewModel.switchMovieListType();
         }
 
         return super.onOptionsItemSelected(item);

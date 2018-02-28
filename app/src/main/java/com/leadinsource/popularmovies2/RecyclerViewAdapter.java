@@ -1,4 +1,4 @@
-package com.leadinsource.popularmovies1;
+package com.leadinsource.popularmovies2;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.leadinsource.popularmovies1.model.Movie;
+import com.leadinsource.popularmovies2.model.Movie;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

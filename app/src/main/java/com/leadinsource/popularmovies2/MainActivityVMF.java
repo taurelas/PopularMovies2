@@ -1,4 +1,4 @@
-package com.leadinsource.popularmovies1;
+package com.leadinsource.popularmovies2;
 
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;

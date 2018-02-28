@@ -1,4 +1,4 @@
-package com.leadinsource.popularmovies1.model;
+package com.leadinsource.popularmovies2.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
