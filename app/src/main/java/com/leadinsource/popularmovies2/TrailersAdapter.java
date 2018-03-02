@@ -23,7 +23,7 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.ViewHo
     }
 
     private List<Video> data;
-    private ClickListener trailerClickListener;
+    private final ClickListener trailerClickListener;
 
     TrailersAdapter(List<Video> data, ClickListener trailerClickListener) {
         this.data = data;
@@ -55,8 +55,8 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.ViewHo
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageButton trailerButton;
-        TextView textView;
+        final ImageButton trailerButton;
+        final TextView textView;
 
 
         ViewHolder(View itemView) {

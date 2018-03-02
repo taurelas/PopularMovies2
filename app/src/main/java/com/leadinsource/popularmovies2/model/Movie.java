@@ -17,7 +17,7 @@ public class Movie implements Parcelable {
     @SerializedName("vote_count")
     public int voteCount;
 
-    int id;
+    public int id;
 
     boolean video;
 
@@ -86,7 +86,7 @@ public class Movie implements Parcelable {
         this.posterPath = in.readString();
         this.originalLanguage = in.readString();
         this.originalTitle = in.readString();
-        this.genreIds = new ArrayList<Integer>();
+        this.genreIds = new ArrayList<>();
         in.readList(this.genreIds, Integer.class.getClassLoader());
         this.backdropPath = in.readString();
         this.adult = in.readByte() != 0;

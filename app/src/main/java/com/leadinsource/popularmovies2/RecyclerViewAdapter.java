@@ -18,7 +18,7 @@ import java.util.List;
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
     private List<Movie> data;
-    private RecyclerViewClickListener clickListener;
+    private final RecyclerViewClickListener clickListener;
 
     public interface RecyclerViewClickListener {
         void onItemClick(Movie movie);
