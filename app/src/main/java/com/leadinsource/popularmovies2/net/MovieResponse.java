@@ -8,7 +8,7 @@ import java.util.List;
  * Represents a JSON response The Movie DB
  */
 
-public class MovieDbResponse {
+public class MovieResponse {
     int page;
     int total_results;
     int total_pages;

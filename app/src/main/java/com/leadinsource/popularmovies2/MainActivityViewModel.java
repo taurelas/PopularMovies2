@@ -1,6 +1,5 @@
 package com.leadinsource.popularmovies2;
 
-import android.arch.core.util.Function;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
@@ -25,7 +24,7 @@ class MainActivityViewModel extends ViewModel {
 
     MainActivityViewModel(Resources resources) {
         this.resources = resources;
-        movieRepository = new MovieRepository();
+        movieRepository = MovieRepository.getInstance();
         sortOrder = new SortOrder();
         movieListType = new ListType();
     }

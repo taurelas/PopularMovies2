@@ -20,7 +20,7 @@ public class Video {
     private String iso31661;
     @SerializedName("key")
     @Expose
-    private String key;
+    public String key;
     @SerializedName("name")
     @Expose
     private String name;
