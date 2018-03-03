@@ -5,6 +5,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 
+import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
 
@@ -19,6 +20,7 @@ class DetailActivityViewModel extends ViewModel {
     private MutableLiveData<Boolean> isFavorite;
     private LiveData<List<Video>> trailers;
     private MutableLiveData<Integer> movieId;
+    private LiveData<List<Review>> reviews;
 
     DetailActivityViewModel() {
         if(isFavorite == null) {
@@ -59,7 +61,7 @@ class DetailActivityViewModel extends ViewModel {
         return trailers;
     }
 
-    public void setMovieId(int movieId) {
+    void setMovieId(int movieId) {
         if(this.movieId==null) {
             this.movieId = new MutableLiveData<>();
         }
@@ -75,5 +77,14 @@ class DetailActivityViewModel extends ViewModel {
         }
 
         return videos;
+    }
+
+    public LiveData<List<Review>> getReviews() {
+        if(reviews== null) {
+            reviews = Transformations.switchMap(movieId,
+                    input -> MovieRepository.getInstance().fetchReviews(input));
+        }
+
+        return reviews;
     }
 }

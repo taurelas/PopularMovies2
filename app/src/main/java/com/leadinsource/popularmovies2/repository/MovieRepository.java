@@ -8,9 +8,11 @@ import android.util.Log;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.leadinsource.popularmovies2.BuildConfig;
 import com.leadinsource.popularmovies2.model.Movie;
+import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
 import com.leadinsource.popularmovies2.net.MovieResponse;
 import com.leadinsource.popularmovies2.net.MoviesWebService;
+import com.leadinsource.popularmovies2.net.ReviewResponse;
 import com.leadinsource.popularmovies2.net.VideoResponse;
 
 import java.io.IOException;
@@ -38,6 +40,7 @@ public class MovieRepository {
 
     private MutableLiveData<List<Movie>> movies;
     private MutableLiveData<List<Video>> trailers;
+    private MutableLiveData<List<Review>> reviews;
 
 
     private MovieRepository() {
@@ -84,10 +87,52 @@ public class MovieRepository {
 
         Call<VideoResponse> call = getMoviesWebService().listVideos(movieId, API_KEY);
 
-        return enqueue2(call);
+        return enqueueVideos(call);
     }
 
-    private LiveData<List<Video>> enqueue2(Call<VideoResponse> call) {
+    public LiveData<List<Review>> fetchReviews(int movieId) {
+        if(reviews==null) {
+            reviews = new MutableLiveData<>();
+        }
+
+        Call<ReviewResponse> call = getMoviesWebService().listReviews(movieId, API_KEY);
+
+        return enqueueReviews(call);
+    }
+
+    private LiveData<List<Review>> enqueueReviews(Call<ReviewResponse> call) {
+        call.enqueue(new Callback<ReviewResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<ReviewResponse> call, @NonNull Response<ReviewResponse> response) {
+                //noinspection HardCodedStringLiteral
+                Log.d(TAG, "Response status code: "+ response.code());
+                if(!response.isSuccessful()) {
+
+                    try {
+                        Log.d(TAG, response.errorBody().string());
+                    } catch (IOException e) {
+                        // do nothing
+                    }
+                    return;
+                }
+                ReviewResponse decodedResponse = response.body();
+                if(decodedResponse==null) return;
+
+                Log.d(TAG, "Successful response!");
+                reviews.postValue(decodedResponse.results);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ReviewResponse> call, @NonNull Throwable t) {
+                Log.d(TAG, "onFailure");
+                Log.d(TAG, t.getMessage());
+            }
+        });
+
+        return reviews;
+    }
+
+    private LiveData<List<Video>> enqueueVideos(Call<VideoResponse> call) {
         call.enqueue(new Callback<VideoResponse>() {
             @Override
             public void onResponse(@NonNull Call<VideoResponse> call, @NonNull Response<VideoResponse> response) {
