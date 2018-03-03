@@ -1,17 +1,24 @@
 package com.leadinsource.popularmovies2;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import com.leadinsource.popularmovies2.databinding.ActivityDetailBinding;
 import com.leadinsource.popularmovies2.model.Movie;
+import com.leadinsource.popularmovies2.model.Review;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -41,7 +48,6 @@ public class DetailActivity extends AppCompatActivity {
             binding.tvReleaseDate.setText(movie.releaseDate);
             binding.tvSynopsis.setText(movie.overview);
             viewModel.setMovieId(movie.id);
-
         }
     }
 

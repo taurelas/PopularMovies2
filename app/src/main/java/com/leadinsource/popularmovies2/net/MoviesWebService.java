@@ -29,4 +29,9 @@ public interface MoviesWebService {
     Call<VideoResponse> listVideos(
         @Path("movie_id") int movieId, @Query(API_ARG) String apiKey);
 
+    @GET("3/movie/{movie_id}/reviews")
+    Call<ReviewResponse> listReviews(
+            @Path("movie_id") int movieId, @Query(API_ARG) String apiKey);
+
+
 }
