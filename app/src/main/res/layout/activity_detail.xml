@@ -42,35 +42,35 @@
                 android:id="@+id/tvReleaseDateLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/margin_text_left"
-                android:layout_marginTop="4dp"
+                android:layout_marginStart="@dimen/margin_details_left"
+                android:layout_marginTop="@dimen/details_top_gap"
                 android:text="@string/release_date"
                 app:layout_constraintStart_toEndOf="@+id/ivPoster"
                 app:layout_constraintTop_toTopOf="@+id/ivPoster"
-                android:layout_marginLeft="@dimen/margin_text_left" />
+                android:layout_marginLeft="@dimen/margin_details_left" />
 
             <TextView
                 android:id="@+id/tvReleaseDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="@dimen/release_date_gap"
                 app:layout_constraintBaseline_toBaselineOf="@+id/tvReleaseDateLabel"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toEndOf="@+id/tvReleaseDateLabel"
                 tools:text="21.08.2017"
-                android:layout_marginLeft="4dp" />
+                android:layout_marginLeft="@dimen/release_date_gap" />
 
             <TextView
                 android:id="@+id/tvVoteAverageLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/margin_text_left"
-                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/margin_details_left"
+                android:layout_marginTop="@dimen/gap_between_details"
                 android:text="@string/vote_average"
                 app:layout_constraintStart_toEndOf="@+id/ivPoster"
                 app:layout_constraintTop_toBottomOf="@+id/tvReleaseDateLabel"
-                android:layout_marginLeft="@dimen/margin_text_left" />
+                android:layout_marginLeft="@dimen/margin_details_left" />
 
             <TextView
                 android:id="@+id/tvVoteAverage"
@@ -86,15 +86,17 @@
                 android:id="@+id/tvSynopsis"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginEnd="@dimen/margin_details_right"
+                android:layout_marginStart="@dimen/margin_details_left"
+                android:layout_marginTop="@dimen/gap_between_details"
                 android:gravity="start"
                 android:textAlignment="viewStart"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/ivPoster"
-                app:layout_constraintTop_toBottomOf="@+id/reviewBar"
-                tools:text="Description description description" />
+                app:layout_constraintTop_toBottomOf="@+id/overviewBar"
+                tools:text="Description description description"
+                android:layout_marginRight="@dimen/margin_details_right"
+                android:layout_marginLeft="@dimen/margin_details_left" />
 
             <fragment
                 android:id="@+id/trailersFragment"
@@ -113,33 +115,35 @@
                 android:id="@+id/tvOverviewLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/margin_details_left"
+                android:layout_marginTop="@dimen/gap_between_details"
                 android:text="@string/overview"
                 app:layout_constraintStart_toEndOf="@+id/ivPoster"
                 app:layout_constraintTop_toBottomOf="@+id/tvVoteAverageLabel"
-                android:layout_marginLeft="8dp" />
+                android:layout_marginLeft="@dimen/margin_details_left" />
 
             <View
-                android:id="@+id/reviewBar"
+                android:id="@+id/overviewBar"
                 android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_height="@dimen/bar_height"
+                android:layout_marginEnd="@dimen/margin_details_right"
+                android:layout_marginStart="@dimen/margin_details_left"
+                android:layout_marginTop="@dimen/gap_between_details"
                 android:background="@android:color/black"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/ivPoster"
-                app:layout_constraintTop_toBottomOf="@id/tvOverviewLabel" />
+                app:layout_constraintTop_toBottomOf="@id/tvOverviewLabel"
+                android:layout_marginRight="@dimen/margin_details_right"
+                android:layout_marginLeft="@dimen/margin_details_left" />
 
             <fragment
                 android:id="@+id/fragment"
                 android:name="com.leadinsource.popularmovies2.ReviewsFragment"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
+                android:layout_marginEnd="@dimen/fragments_margin"
+                android:layout_marginStart="@dimen/fragments_margin"
+                android:layout_marginTop="@dimen/top_fragment_gap"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/trailersFragment"
@@ -151,7 +155,8 @@
                 android:layout_height="wrap_content"
                 app:barrierDirection="bottom"
                 app:constraint_referenced_ids="ivPoster,tvSynopsis"
-                tools:layout_editor_absoluteY="288dp" />
+                tools:layout_editor_absoluteY="288dp"
+                tools:ignore="MissingConstraints" />
 
         </android.support.constraint.ConstraintLayout>
     </ScrollView>

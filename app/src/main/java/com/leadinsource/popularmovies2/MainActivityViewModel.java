@@ -25,8 +25,6 @@ class MainActivityViewModel extends AndroidViewModel {
     private final MovieRepository movieRepository;
     private final Resources resources;
 
-
-
     MainActivityViewModel(Application application) {
         super(application);
         this.resources = application.getResources();
@@ -35,7 +33,11 @@ class MainActivityViewModel extends AndroidViewModel {
         movieListType = new ListType();
     }
 
-    LiveData<String> getSortOrder() {
+    /**
+     * Provides text to display in relation to Sort Order
+     * @return Observable String to display
+     */
+    LiveData<String> getSortOrderText() {
         return sortOrder.getCurrentText();
     }
 
@@ -123,19 +125,33 @@ class MainActivityViewModel extends AndroidViewModel {
         return movies;
     }
 
+    /**
+     * Used by Activity to notify that the sort has switched, the Activity doesn't know what sort
+     * it displays
+     */
     void switchSorting() {
         sortOrder.swap();
     }
 
+    /**
+     * Provides text to display in relation to currently displayed list
+     * @return LiveData String that can be observed by MainActivity
+     */
     LiveData<String> getMovieListType() {
         return movieListType.getCurrentText();
     }
 
+    /**
+     * Used by Activity to notify that the movie list has switched, the Activity doesn't know what
+     * list it displays
+     */
     void switchMovieListType() {
         movieListType.swap();
     }
 
-
+    /**
+     * Handles all sort-related issues
+     */
     private class SortOrder {
         private static final int MOST_POPULAR = 1;
         private static final int HIGHEST_RATED = 2;
@@ -182,6 +198,9 @@ class MainActivityViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * Handles movie list info and behaviour
+     */
     private class ListType {
         static final int TOP_MOVIES = 1;
         static final int FAVORITE_MOVIES = 2;

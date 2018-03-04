@@ -11,6 +11,9 @@ import android.view.MenuItem;
 
 import com.leadinsource.popularmovies2.databinding.ActivityMainBinding;
 
+/**
+ * Displays grid of movie posters
+ */
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -47,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Starts observing sortOrder data, must be called after menu has been created
+     * Starts observing sortOrder text date, must be called after menu has been created
      */
     private void observeSortOrder() {
-        viewModel.getSortOrder().observe(this, s -> {
+        viewModel.getSortOrderText().observe(this, s -> {
            sortSwitch.setTitle(s);
            onPrepareOptionsMenu(menu);
         });
@@ -69,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Starts observing type of movie list: either favorites or top-rated.
+     */
     private void observeListType() {
         viewModel.getMovieListType().observe(this, text -> {
             listSwitch.setTitle(text);
@@ -76,6 +82,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles clicks on menu items, switches sorting and list type of movies accordingly.
+     * @param item The menu item that was selected.
+     * @return boolean Return false to allow normal menu processing to proceed, true to consume it here.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item == sortSwitch) {

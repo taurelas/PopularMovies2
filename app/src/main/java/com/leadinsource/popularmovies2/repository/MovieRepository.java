@@ -319,6 +319,7 @@ public class MovieRepository {
         return favoriteMovies;
     }
 
+    @NonNull
     public LiveData<Boolean> isFavorite(Integer movieId) {
 
         if(isFavorite==null)
