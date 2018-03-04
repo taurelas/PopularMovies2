@@ -277,11 +277,10 @@ public class MovieRepository {
         isFavorite.postValue(false);
     }
 
-    //TODO implement sorting order
     private List<Movie> fetchFavoriteMovies(String sortOrder) {
         Uri uri = DataContract.MoviesEntry.CONTENT_URI;
 
-        Cursor cursor = contentResolver.query(uri, null,null,null,null);
+        Cursor cursor = contentResolver.query(uri, null,null,null,sortOrder);
 
         List<Movie> movieList = new ArrayList<>();
         while(cursor.moveToNext()) {

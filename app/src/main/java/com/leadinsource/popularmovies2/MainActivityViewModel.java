@@ -73,7 +73,6 @@ class MainActivityViewModel extends AndroidViewModel {
 
     /**
      * Provides list of favorite movies from the db
-     * TODO implement with actual transformation and getting stuff from DB
      * @return LiveData object with List of Movies
      */
     private LiveData<List<Movie>> getFavoriteMovies() {
