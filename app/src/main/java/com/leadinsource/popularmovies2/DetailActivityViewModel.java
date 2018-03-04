@@ -8,6 +8,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.content.ContentResolver;
+import android.support.annotation.NonNull;
 
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
@@ -38,6 +39,11 @@ class DetailActivityViewModel extends AndroidViewModel {
 
     }
 
+    /**
+     * When MovieId changes, it will check whether the movie is favorite or not
+     * @return boolean to be observed
+     */
+    @NonNull
     LiveData<Boolean> isFavorite() {
 
         if(isFavorite==null) {
@@ -48,6 +54,9 @@ class DetailActivityViewModel extends AndroidViewModel {
         return isFavorite;
     }
 
+    /**
+     * Advises the repo to change data regarding the movie being favorite.
+     */
     void switchFavorite() {
 
         if(isFavorite.getValue()) {
@@ -58,11 +67,19 @@ class DetailActivityViewModel extends AndroidViewModel {
 
     }
 
+    /**
+     * Fixes Urls in trailers and make the trailers accessible to clients
+     * @return list of trailers wrapped in LiveData
+     */
     LiveData<List<Video>> getTrailers() {
         return Transformations.map(getTrailersWhenIdChanged(),
                 this::fixYouTubeUrls);
     }
 
+    /**
+     * Fetches trailers from the repo when movieId changes
+     * @return list of trailers wrapped in LiveData
+     */
     private LiveData<List<Video>> getTrailersWhenIdChanged() {
         if(trailers==null) {
 

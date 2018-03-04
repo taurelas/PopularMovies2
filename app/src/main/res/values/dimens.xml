@@ -4,7 +4,17 @@
     <dimen name="image_margin_start">4dp</dimen>
     <dimen name="margin_below_title">8dp</dimen>
     <dimen name="title_margin">8dp</dimen>
-    <dimen name="margin_text_left">8dp</dimen>
+    <dimen name="margin_details_left">8dp</dimen>
     <dimen name="text_gap">4dp</dimen>
     <dimen name="trailer_elements_margin">16dp</dimen>
+    <dimen name="details_top_gap">4dp</dimen>
+    <dimen name="release_date_gap">4dp</dimen>
+    <dimen name="gap_between_details">8dp</dimen>
+    <dimen name="margin_details_right">8dp</dimen>
+    <dimen name="bar_height">1dp</dimen>
+    <dimen name="top_fragment_gap">4dp</dimen>
+    <dimen name="fragments_margin">8dp</dimen>
+    <dimen name="fragments_rv_top">8dp</dimen>
+    <dimen name="std_margin">8dp</dimen>
+    <dimen name="gap_between_reviews">16dp</dimen>
 </resources>

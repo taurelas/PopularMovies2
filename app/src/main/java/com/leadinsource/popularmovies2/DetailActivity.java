@@ -1,25 +1,22 @@
 package com.leadinsource.popularmovies2;
 
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.support.annotation.Nullable;
+import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.leadinsource.popularmovies2.databinding.ActivityDetailBinding;
 import com.leadinsource.popularmovies2.model.Movie;
-import com.leadinsource.popularmovies2.model.Review;
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
-
+/**
+ * Displays details of a movie that was selected in MainActivity
+ */
 public class DetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_MOVIE = "EXTRA_MOVIE";
@@ -68,7 +65,14 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if(item==addToFavorites) {
+            boolean favorite = viewModel.isFavorite().getValue();
             viewModel.switchFavorite();
+            if(favorite) {
+                Toast.makeText(this, "Removed from favorites", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Added to favorites", Toast.LENGTH_SHORT).show();
+            }
+
         }
 
         if(item.getItemId()==android.R.id.home) {
@@ -78,14 +82,15 @@ public class DetailActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Starts observing whether the movie is a favorite or not and sets the icon accordingly
+     */
     private void observeIsFavorite() {
         viewModel.isFavorite().observe(this, isFavorite -> {
             if(isFavorite) {
                 addToFavorites.setIcon(android.R.drawable.star_big_on);
-
             } else {
                 addToFavorites.setIcon(android.R.drawable.star_big_off);
-
             }
             onPrepareOptionsMenu(menu);
         });
