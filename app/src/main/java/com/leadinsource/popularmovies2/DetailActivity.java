@@ -56,6 +56,7 @@ public class DetailActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.detail_menu, menu);
 
         this.menu = menu;
+
         addToFavorites = menu.findItem(R.id.favorite);
 
         observeIsFavorite();
@@ -86,6 +87,7 @@ public class DetailActivity extends AppCompatActivity {
                 addToFavorites.setIcon(android.R.drawable.star_big_off);
 
             }
+            onPrepareOptionsMenu(menu);
         });
     }
 
