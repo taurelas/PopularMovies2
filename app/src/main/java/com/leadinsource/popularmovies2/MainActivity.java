@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        viewModel = ViewModelProviders.of(this, new MainActivityVMF(getResources())).get(MainActivityViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
         viewModel.getMoviesData().observe(this, data -> {
             if(binding.recyclerView.getAdapter()== null) {

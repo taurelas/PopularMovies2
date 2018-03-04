@@ -1,10 +1,13 @@
 package com.leadinsource.popularmovies2;
 
+import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.content.res.Resources;
+import android.database.Cursor;
 
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
@@ -15,16 +18,19 @@ import java.util.List;
  * ViewModel for MainActivity
  */
 
-class MainActivityViewModel extends ViewModel {
+class MainActivityViewModel extends AndroidViewModel {
 
     private final SortOrder sortOrder;
     private final ListType movieListType;
     private final MovieRepository movieRepository;
     private final Resources resources;
 
-    MainActivityViewModel(Resources resources) {
-        this.resources = resources;
-        movieRepository = MovieRepository.getInstance();
+
+
+    MainActivityViewModel(Application application) {
+        super(application);
+        this.resources = application.getResources();
+        movieRepository = MovieRepository.getInstance(application.getContentResolver());
         sortOrder = new SortOrder();
         movieListType = new ListType();
     }
@@ -71,10 +77,17 @@ class MainActivityViewModel extends ViewModel {
      * @return LiveData object with List of Movies
      */
     private LiveData<List<Movie>> getFavoriteMovies() {
-        return getPopularMovies();
+        return Transformations.switchMap(sortOrder.getCurrent(), input -> {
+            if(input == SortOrder.MOST_POPULAR) {
+                return movieRepository.getPopularFavorites();
+            } else {
+                return movieRepository.getTopRatedFavorites();
+            }
+        });
+
     }
 
-    /**
+        /**
      * Get popular movies list from repository, amending the url in the process
      *
      * @return LiveData object to be transformed accordingly before passing to MainActivity

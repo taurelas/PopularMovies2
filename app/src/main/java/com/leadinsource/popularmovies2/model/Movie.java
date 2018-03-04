@@ -26,7 +26,7 @@ public class Movie implements Parcelable {
 
     public String title;
 
-    float popularity;
+    public float popularity;
 
     @SerializedName("poster_path")
     public String posterPath;

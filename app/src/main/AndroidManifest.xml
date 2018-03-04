@@ -23,6 +23,10 @@
             android:parentActivityName="com.leadinsource.popularmovies2.MainActivity">
 
         </activity>
+        <provider
+            android:authorities="com.leadinsource.popularmovies2"
+            android:name="com.leadinsource.popularmovies2.db.MovieContentProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

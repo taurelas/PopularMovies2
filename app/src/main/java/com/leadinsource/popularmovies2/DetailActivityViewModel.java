@@ -1,9 +1,13 @@
 package com.leadinsource.popularmovies2;
 
+import android.app.Application;
+import android.arch.core.util.Function;
+import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
+import android.content.ContentResolver;
 
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
@@ -15,35 +19,43 @@ import java.util.List;
  * ViewModel for Detail Activity
  */
 
-class DetailActivityViewModel extends ViewModel {
+class DetailActivityViewModel extends AndroidViewModel {
 
-    private MutableLiveData<Boolean> isFavorite;
+    private LiveData<Boolean> isFavorite;
     private LiveData<List<Video>> trailers;
     private MutableLiveData<Integer> movieId;
     private LiveData<List<Review>> reviews;
+    private MovieRepository movieRepository;
 
-    DetailActivityViewModel() {
-        if(isFavorite == null) {
-            isFavorite = new MutableLiveData<>();
-            isFavorite.setValue(false);
-        }
+    DetailActivityViewModel(Application application) {
+        super(application);
 
         if(movieId ==null) {
             movieId = new MutableLiveData<>();
         }
 
-        //TODO change to observe data from the db
-
-
+        movieRepository = MovieRepository.getInstance(application.getContentResolver());
 
     }
 
     LiveData<Boolean> isFavorite() {
+
+        if(isFavorite==null) {
+            isFavorite = Transformations.switchMap(movieId, input ->
+                    movieRepository.isFavorite(input));
+        }
+
         return isFavorite;
     }
 
     void switchFavorite() {
-        isFavorite.setValue(!isFavorite.getValue());
+
+        if(isFavorite.getValue()) {
+            movieRepository.removeFromFavorites(movieId.getValue());
+        } else {
+            movieRepository.addToFavorites(movieId.getValue());
+        }
+
     }
 
     LiveData<List<Video>> getTrailers() {
@@ -55,7 +67,7 @@ class DetailActivityViewModel extends ViewModel {
         if(trailers==null) {
 
             trailers = Transformations.switchMap(movieId,
-                    input -> MovieRepository.getInstance().fetchTrailers(input));
+                    input -> movieRepository.fetchTrailers(input));
         }
 
         return trailers;
@@ -82,7 +94,7 @@ class DetailActivityViewModel extends ViewModel {
     public LiveData<List<Review>> getReviews() {
         if(reviews== null) {
             reviews = Transformations.switchMap(movieId,
-                    input -> MovieRepository.getInstance().fetchReviews(input));
+                    input -> movieRepository.fetchReviews(input));
         }
 
         return reviews;
