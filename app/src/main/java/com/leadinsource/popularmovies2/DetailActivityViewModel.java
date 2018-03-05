@@ -30,7 +30,7 @@ class DetailActivityViewModel extends AndroidViewModel {
     private MovieRepository movieRepository;
     private LiveData<Movie> movie;
 
-    DetailActivityViewModel(Application application) {
+    public DetailActivityViewModel(Application application) {
         super(application);
 
         if(movieId ==null) {
