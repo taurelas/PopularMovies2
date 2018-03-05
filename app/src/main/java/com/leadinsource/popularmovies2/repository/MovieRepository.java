@@ -53,6 +53,7 @@ public class MovieRepository {
     private HashMap<Integer, Movie> movieCache;
     private MutableLiveData<List<Video>> trailers;
     private MutableLiveData<List<Review>> reviews;
+    private MutableLiveData<Movie> movie;
 
     private MovieRepository(ContentResolver contentResolver)  {
         this.contentResolver = contentResolver;
@@ -128,7 +129,7 @@ public class MovieRepository {
                 ReviewResponse decodedResponse = response.body();
                 if(decodedResponse==null) return;
 
-                Log.d(TAG, "Successful response!");
+                Log.d("EnqueueReviews", "Successful response!");
                 reviews.postValue(decodedResponse.results);
             }
 
@@ -161,7 +162,7 @@ public class MovieRepository {
                 VideoResponse decodedResponse = response.body();
                 if(decodedResponse==null) return;
 
-                Log.d(TAG, "Successful response!");
+                Log.d("EnqueueTrailers", "Successful response!");
 
                 trailers.postValue(decodedResponse.results);
 
@@ -199,7 +200,7 @@ public class MovieRepository {
                 MovieResponse decodedResponse = response.body();
                 if(decodedResponse==null) return;
 
-                Log.d(TAG, "Successful response!");
+                Log.d("EnqueueMovies", "Successful response!");
 
                 cacheMovies(decodedResponse.results);
 
@@ -337,5 +338,16 @@ public class MovieRepository {
         cursor.close();
 
         return isFavorite;
+    }
+
+    public LiveData<Movie> getMovie(Integer input) {
+
+        if(movie == null) {
+            movie = new MutableLiveData<>();
+        }
+
+        movie.setValue(movieCache.get(input));
+
+        return movie;
     }
 }

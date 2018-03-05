@@ -10,6 +10,7 @@ import android.arch.lifecycle.ViewModel;
 import android.content.ContentResolver;
 import android.support.annotation.NonNull;
 
+import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
@@ -27,6 +28,7 @@ class DetailActivityViewModel extends AndroidViewModel {
     private MutableLiveData<Integer> movieId;
     private LiveData<List<Review>> reviews;
     private MovieRepository movieRepository;
+    private LiveData<Movie> movie;
 
     DetailActivityViewModel(Application application) {
         super(application);
@@ -37,6 +39,14 @@ class DetailActivityViewModel extends AndroidViewModel {
 
         movieRepository = MovieRepository.getInstance(application.getContentResolver());
 
+    }
+
+    LiveData<Movie> getMovie() {
+        if(movie==null) {
+            movie = Transformations.switchMap(movieId, input -> movieRepository.getMovie(input));
+        }
+
+        return movie;
     }
 
     /**

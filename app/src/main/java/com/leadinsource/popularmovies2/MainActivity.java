@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
                 adapter = new RecyclerViewAdapter(data, movie -> {
                     Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                    intent.putExtra(DetailActivity.EXTRA_MOVIE,movie);
+                    intent.putExtra(DetailActivity.EXTRA_MOVIE_ID,movie.id);
                     startActivity(intent);
                 });
 

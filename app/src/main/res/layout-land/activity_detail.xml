@@ -20,7 +20,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/fragments_margin"
                 android:layout_marginStart="@dimen/fragments_margin"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout="@layout/fragment_details" />
@@ -28,14 +28,15 @@
             <fragment
                 android:id="@+id/trailersFragment"
                 android:name="com.leadinsource.popularmovies2.TrailersFragment"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/fragments_margin"
-                android:layout_marginStart="@dimen/fragments_margin"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="@dimen/fragments_margin"
+                app:layout_constraintEnd_toStartOf="@+id/reviewsFragment"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/detailsFragment"
-                tools:layout="@layout/fragment_trailers" />
+                app:layout_constraintTop_toBottomOf="@+id/detailsFragment"
+                tools:layout="@layout/fragment_trailers"
+                android:layout_marginRight="@dimen/fragments_margin" />
 
 
             <fragment
@@ -45,11 +46,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/fragments_margin"
                 android:layout_marginStart="@dimen/fragments_margin"
-                android:layout_marginTop="@dimen/top_fragment_gap"
+                android:layout_marginTop="32dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/trailersFragment"
+                app:layout_constraintStart_toStartOf="@+id/guideline"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:layout="@layout/fragment_reviews" />
+
+            <android.support.constraint.Guideline
+                android:id="@+id/guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.66" />
 
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
