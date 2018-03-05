@@ -18,7 +18,7 @@ import java.util.List;
  * ViewModel for MainActivity
  */
 
-class MainActivityViewModel extends AndroidViewModel {
+public class MainActivityViewModel extends AndroidViewModel {
 
     private final SortOrder sortOrder;
     private final ListType movieListType;

@@ -21,7 +21,7 @@ import java.util.List;
  * ViewModel for Detail Activity
  */
 
-class DetailActivityViewModel extends AndroidViewModel {
+public class DetailActivityViewModel extends AndroidViewModel {
 
     private LiveData<Boolean> isFavorite;
     private LiveData<List<Video>> trailers;
