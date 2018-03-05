@@ -25,7 +25,7 @@ class MainActivityViewModel extends AndroidViewModel {
     private final MovieRepository movieRepository;
     private final Resources resources;
 
-    MainActivityViewModel(Application application) {
+    public MainActivityViewModel(Application application) {
         super(application);
         this.resources = application.getResources();
         movieRepository = MovieRepository.getInstance(application.getContentResolver());
