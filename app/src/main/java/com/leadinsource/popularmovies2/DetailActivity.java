@@ -19,7 +19,7 @@ import com.squareup.picasso.Picasso;
  */
 public class DetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_MOVIE = "EXTRA_MOVIE";
+    public static final String EXTRA_MOVIE_ID = "EXTRA_MOVIE_ID";
     private MenuItem addToFavorites;
     private Menu menu;
 
@@ -37,14 +37,9 @@ public class DetailActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         if(intent!=null) {
-            Movie movie = intent.getParcelableExtra(EXTRA_MOVIE);
+            int id = intent.getIntExtra(EXTRA_MOVIE_ID,0);
 
-            Picasso.with(this).load(movie.posterPath).into(binding.ivPoster);
-            binding.tvTitle.setText(movie.title);
-            binding.tvVoteAverage.setText(String.valueOf(movie.voteAverage));
-            binding.tvReleaseDate.setText(movie.releaseDate);
-            binding.tvSynopsis.setText(movie.overview);
-            viewModel.setMovieId(movie.id);
+            viewModel.setMovieId(id);
         }
     }
 
