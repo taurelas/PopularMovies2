@@ -13,6 +13,7 @@ import android.util.Log;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.leadinsource.popularmovies2.BuildConfig;
 import com.leadinsource.popularmovies2.db.DataContract;
+import com.leadinsource.popularmovies2.db.DataContract.PopularMoviesEntry;
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
@@ -70,13 +71,37 @@ public class MovieRepository {
     public LiveData<List<Movie>> fetchPopularMovies() {
 
         if(movies == null) {
-            movies = new MutableLiveData<>();
+
+            List<Movie> moviesFromDB = getPopularMoviesFromDB();
+
+            if(moviesFromDB!=null) {
+                movies = new MutableLiveData<>();
+                movies.setValue(moviesFromDB);
+                cacheMovies(moviesFromDB);
+                Log.d(TAG, "Returning from DB " +movies.getValue().get(0).title);
+                return movies;
+            }
         }
+        Log.d(TAG, "Returning from Internet");
+        movies = new MutableLiveData<>();
 
         Call<MovieResponse> call = getMoviesWebService().listPopularMovies(API_KEY);
+        enqueueMovies(call);
 
+        return movies;
+    }
 
-        return enqueueMovies(call);
+    private List<Movie> getPopularMoviesFromDB() {
+
+        Uri uri = PopularMoviesEntry.CONTENT_URI;
+
+        Cursor cursor = contentResolver.query(uri, null, null, null,null);
+
+        if(cursor.getCount()<=0) {
+            return null;
+        }
+
+        return getMoviesFromCursor(cursor);
     }
 
     public LiveData<List<Movie>> fetchTopRatedMovies() {
@@ -87,7 +112,9 @@ public class MovieRepository {
         Call<MovieResponse> call = getMoviesWebService().listTopRatedMovies(API_KEY);
 
         //async request
-        return enqueueMovies(call);
+        enqueueMovies(call);
+
+        return movies;
 
     }
 
@@ -98,7 +125,7 @@ public class MovieRepository {
 
         Call<VideoResponse> call = getMoviesWebService().listVideos(movieId, API_KEY);
 
-        return enqueueVideos(call);
+        return enqueueTrailers(call);
     }
 
     public LiveData<List<Review>> fetchReviews(int movieId) {
@@ -143,7 +170,7 @@ public class MovieRepository {
         return reviews;
     }
 
-    private LiveData<List<Video>> enqueueVideos(Call<VideoResponse> call) {
+    private LiveData<List<Video>> enqueueTrailers(Call<VideoResponse> call) {
         call.enqueue(new Callback<VideoResponse>() {
             @Override
             public void onResponse(@NonNull Call<VideoResponse> call, @NonNull Response<VideoResponse> response) {
@@ -178,9 +205,7 @@ public class MovieRepository {
         return trailers;
     }
 
-
-
-    private LiveData<List<Movie>> enqueueMovies(Call<MovieResponse> call) {
+    private void enqueueMovies(Call<MovieResponse> call) {
         call.enqueue(new Callback<MovieResponse>() {
             @Override
             public void onResponse(@NonNull Call<MovieResponse> call, @NonNull Response<MovieResponse> response) {
@@ -201,15 +226,11 @@ public class MovieRepository {
                 if(decodedResponse==null) return;
 
                 Log.d("EnqueueMovies", "Successful response!");
-
                 cacheMovies(decodedResponse.results);
-
-
+                persistMovies(decodedResponse.results);
                 movies.postValue(decodedResponse.results);
-
-
-
             }
+
 
             @Override
             public void onFailure(@NonNull Call<MovieResponse> call, @NonNull Throwable t) {
@@ -218,7 +239,20 @@ public class MovieRepository {
             }
         });
 
-        return movies;
+    }
+
+    private void persistMovies(List<Movie> results) {
+
+        Uri uri = PopularMoviesEntry.CONTENT_URI;
+        contentResolver.delete(uri, null, null);
+        ContentValues[] cv = new ContentValues[results.size()];
+        int index = 0;
+        for(Movie movie: results) {
+            ContentValues contentValues = getMovieContentValues(movie);
+            cv[index++] = contentValues;
+        }
+
+        contentResolver.bulkInsert(uri, cv);
     }
 
     private void cacheMovies(List<Movie> results) {
@@ -247,18 +281,10 @@ public class MovieRepository {
     public void addToFavorites(int movieId) {
 
         if (movieCache!=null) {
-            Uri uri = ContentUris.withAppendedId(DataContract.MoviesEntry.CONTENT_URI, movieId);
+            Uri uri = ContentUris.withAppendedId(DataContract.FavoriteMoviesEntry.CONTENT_URI, movieId);
             Movie movie = movieCache.get(movieId);
 
-
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(DataContract.MoviesEntry.MOVIE_ID, movieId);
-            contentValues.put(DataContract.MoviesEntry.OVERVIEW, movie.overview);
-            contentValues.put(DataContract.MoviesEntry.POPULARITY, movie.popularity);
-            contentValues.put(DataContract.MoviesEntry.POSTER_URL, movie.posterPath);
-            contentValues.put(DataContract.MoviesEntry.RELEASE_DATE, movie.releaseDate);
-            contentValues.put(DataContract.MoviesEntry.TITLE, movie.title);
-            contentValues.put(DataContract.MoviesEntry.USER_RATING, movie.voteAverage);
+            ContentValues contentValues = getMovieContentValues(movie);
 
             uri = contentResolver.insert(uri, contentValues);
 
@@ -267,10 +293,24 @@ public class MovieRepository {
         }
     }
 
-    public void removeFromFavorites(int movieId) {
-        Uri uri = ContentUris.withAppendedId(DataContract.MoviesEntry.CONTENT_URI, movieId);
+    ContentValues getMovieContentValues(Movie movie) {
+
         ContentValues contentValues = new ContentValues();
-        contentValues.put(DataContract.MoviesEntry.MOVIE_ID, movieId);
+        contentValues.put(DataContract.FavoriteMoviesEntry.MOVIE_ID, movie.id);
+        contentValues.put(DataContract.FavoriteMoviesEntry.OVERVIEW, movie.overview);
+        contentValues.put(DataContract.FavoriteMoviesEntry.POPULARITY, movie.popularity);
+        contentValues.put(DataContract.FavoriteMoviesEntry.POSTER_URL, movie.posterPath);
+        contentValues.put(DataContract.FavoriteMoviesEntry.RELEASE_DATE, movie.releaseDate);
+        contentValues.put(DataContract.FavoriteMoviesEntry.TITLE, movie.title);
+        contentValues.put(DataContract.FavoriteMoviesEntry.USER_RATING, movie.voteAverage);
+
+        return contentValues;
+    }
+
+    public void removeFromFavorites(int movieId) {
+        Uri uri = ContentUris.withAppendedId(DataContract.FavoriteMoviesEntry.CONTENT_URI, movieId);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DataContract.FavoriteMoviesEntry.MOVIE_ID, movieId);
 
         int deleted = contentResolver.delete(uri, null, null);
 
@@ -279,20 +319,24 @@ public class MovieRepository {
     }
 
     private List<Movie> fetchFavoriteMovies(String sortOrder) {
-        Uri uri = DataContract.MoviesEntry.CONTENT_URI;
+        Uri uri = DataContract.FavoriteMoviesEntry.CONTENT_URI;
 
         Cursor cursor = contentResolver.query(uri, null,null,null,sortOrder);
 
+        return getMoviesFromCursor(cursor);
+    }
+
+    private List<Movie> getMoviesFromCursor(Cursor cursor) {
         List<Movie> movieList = new ArrayList<>();
         while(cursor.moveToNext()) {
             Movie movie = new Movie();
-            movie.id = cursor.getInt(cursor.getColumnIndex(DataContract.MoviesEntry.MOVIE_ID));
-            movie.overview = cursor.getString(cursor.getColumnIndex(DataContract.MoviesEntry.OVERVIEW));
-            movie.posterPath = cursor.getString(cursor.getColumnIndex(DataContract.MoviesEntry.POSTER_URL));
-            movie.releaseDate = cursor.getString(cursor.getColumnIndex(DataContract.MoviesEntry.RELEASE_DATE));
-            movie.title = cursor.getString(cursor.getColumnIndex(DataContract.MoviesEntry.TITLE));
-            movie.voteAverage = cursor.getFloat(cursor.getColumnIndex(DataContract.MoviesEntry.USER_RATING));
-            movie.popularity = cursor.getFloat(cursor.getColumnIndex(DataContract.MoviesEntry.POPULARITY));
+            movie.id = cursor.getInt(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.MOVIE_ID));
+            movie.overview = cursor.getString(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.OVERVIEW));
+            movie.posterPath = cursor.getString(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.POSTER_URL));
+            movie.releaseDate = cursor.getString(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.RELEASE_DATE));
+            movie.title = cursor.getString(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.TITLE));
+            movie.voteAverage = cursor.getFloat(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.USER_RATING));
+            movie.popularity = cursor.getFloat(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.POPULARITY));
             movieList.add(movie);
         }
 
@@ -301,11 +345,12 @@ public class MovieRepository {
         return movieList;
     }
 
+
     public LiveData<List<Movie>> getPopularFavorites() {
         if(favoriteMovies == null) {
             favoriteMovies = new MutableLiveData<>();
         }
-        favoriteMovies.postValue(fetchFavoriteMovies(DataContract.MoviesEntry.POPULARITY + " DESC"));
+        favoriteMovies.postValue(fetchFavoriteMovies(DataContract.FavoriteMoviesEntry.POPULARITY + " DESC"));
 
         return favoriteMovies;
     }
@@ -315,7 +360,7 @@ public class MovieRepository {
             favoriteMovies = new MutableLiveData<>();
         }
 
-        favoriteMovies.postValue(fetchFavoriteMovies(DataContract.MoviesEntry.USER_RATING + " DESC"));
+        favoriteMovies.postValue(fetchFavoriteMovies(DataContract.FavoriteMoviesEntry.USER_RATING + " DESC"));
 
         return favoriteMovies;
     }
@@ -326,7 +371,7 @@ public class MovieRepository {
         if(isFavorite==null)
             isFavorite = new MutableLiveData<>();
 
-        Uri uri = ContentUris.withAppendedId(DataContract.MoviesEntry.CONTENT_URI, movieId);
+        Uri uri = ContentUris.withAppendedId(DataContract.FavoriteMoviesEntry.CONTENT_URI, movieId);
 
         Cursor cursor  = contentResolver.query(uri, null, null, null, null);
         if(cursor.getCount()>0) {

@@ -4,8 +4,10 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -16,6 +18,7 @@ import com.leadinsource.popularmovies2.databinding.ActivityMainBinding;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private ActivityMainBinding binding;
     private MainActivityViewModel viewModel;
     private MenuItem sortSwitch;
@@ -98,5 +101,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.d(TAG, "onRestoreInstanceState");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
     }
 }

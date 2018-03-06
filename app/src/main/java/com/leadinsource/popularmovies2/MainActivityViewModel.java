@@ -24,6 +24,7 @@ public class MainActivityViewModel extends AndroidViewModel {
     private final ListType movieListType;
     private final MovieRepository movieRepository;
     private final Resources resources;
+    private LiveData<List<Movie>> movies;
 
     public MainActivityViewModel(Application application) {
         super(application);
@@ -35,6 +36,7 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     /**
      * Provides text to display in relation to Sort Order
+     *
      * @return Observable String to display
      */
     LiveData<String> getSortOrderText() {
@@ -49,17 +51,24 @@ public class MainActivityViewModel extends AndroidViewModel {
      * @return Observable LiveData with list of Movies either from local DB or The Movie DB
      */
     LiveData<List<Movie>> getMoviesData() {
-        return Transformations.switchMap(movieListType.getCurrent(), input -> {
+        if (movies != null && movies.getValue() != null && movies.getValue().size() > 0) {
+            return movies;
+        }
+
+        movies = Transformations.switchMap(movieListType.getCurrent(), input -> {
             if (input == ListType.TOP_MOVIES) {
                 return getTopMovies();
             } else {
                 return getFavoriteMovies();
             }
         });
+
+        return movies;
     }
 
     /**
      * Provides either a list of most popular movies or best rated from The Movie DB
+     *
      * @return LiveData object with List of Movies
      */
     private LiveData<List<Movie>> getTopMovies() {
@@ -75,11 +84,12 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     /**
      * Provides list of favorite movies from the db
+     *
      * @return LiveData object with List of Movies
      */
     private LiveData<List<Movie>> getFavoriteMovies() {
         return Transformations.switchMap(sortOrder.getCurrent(), input -> {
-            if(input == SortOrder.MOST_POPULAR) {
+            if (input == SortOrder.MOST_POPULAR) {
                 return movieRepository.getPopularFavorites();
             } else {
                 return movieRepository.getTopRatedFavorites();
@@ -88,7 +98,7 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     }
 
-        /**
+    /**
      * Get popular movies list from repository, amending the url in the process
      *
      * @return LiveData object to be transformed accordingly before passing to MainActivity
@@ -135,6 +145,7 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     /**
      * Provides text to display in relation to currently displayed list
+     *
      * @return LiveData String that can be observed by MainActivity
      */
     LiveData<String> getMovieListType() {
