@@ -1,5 +1,6 @@
 package com.leadinsource.popularmovies2.repository;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.ContentResolver;
@@ -7,6 +8,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -57,12 +59,12 @@ public class MovieRepository {
     private MutableLiveData<List<Review>> reviews;
     private MutableLiveData<Movie> movie;
 
-    private MovieRepository(ContentResolver contentResolver)  {
+    private MovieRepository(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
     }
 
     public static MovieRepository getInstance(ContentResolver contentResolver) {
-        if(INSTANCE==null) {
+        if (INSTANCE == null) {
             INSTANCE = new MovieRepository(contentResolver);
         }
 
@@ -71,34 +73,66 @@ public class MovieRepository {
 
     public LiveData<List<Movie>> fetchPopularMovies() {
 
-        if(movies == null) {
+        Call call = getMoviesWebService().listPopularMovies(API_KEY);
 
-            List<Movie> moviesFromDB = getTopMoviesFromDB();
+        if (movies == null) {
+            movies = new MutableLiveData<>();
 
-            if(moviesFromDB!=null) {
-                movies = new MutableLiveData<>();
-                movies.setValue(moviesFromDB);
-                mapMovies(moviesFromDB);
-                return movies;
-            }
+            new DbTopMoviesTask().execute(call);
+
+        } else {
+
+            //async request
+            requestMoviesFromAPI(call);
         }
 
-        movies = new MutableLiveData<>();
+        return movies;
+    }
 
-        Call<MovieResponse> call = getMoviesWebService().listPopularMovies(API_KEY);
-        //async request
-        enqueueMovies(call);
+    public LiveData<List<Movie>> fetchTopRatedMovies() {
+
+        Call call = getMoviesWebService().listTopRatedMovies(API_KEY);
+
+        if (movies == null) {
+            movies = new MutableLiveData<>();
+            new DbTopMoviesTask().execute(call);
+        } else {
+            requestMoviesFromAPI(call);
+        }
 
         return movies;
+    }
+
+    // partly based on
+    // https://medium.com/google-developers/lifecycle-aware-data-loading-with-android-architecture-components-f95484159de4
+    class DbTopMoviesTask extends AsyncTask<Call, Void, List<Movie>> {
+
+        Call<MovieResponse> call;
+
+        @Override
+        protected List<Movie> doInBackground(Call[] calls) {
+            this.call = calls[0];
+            return getTopMoviesFromDB();
+        }
+
+        @Override
+        protected void onPostExecute(List<Movie> movies) {
+            if (movies != null) {
+                MovieRepository.this.movies.setValue(movies);
+                mapMovies(movies);
+            } else {
+                requestMoviesFromAPI(call);
+            }
+        }
     }
 
     private List<Movie> getTopMoviesFromDB() {
 
         Uri uri = TopMoviesEntry.CONTENT_URI;
 
-        Cursor cursor = contentResolver.query(uri, null, null, null,null);
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
 
-        if(cursor.getCount()<=0) {
+        if (cursor.getCount() <= 0) {
             return null;
         }
 
@@ -109,33 +143,9 @@ public class MovieRepository {
         return result;
     }
 
-    public LiveData<List<Movie>> fetchTopRatedMovies() {
-        if(movies == null) {
-
-           List<Movie> moviesFromDB = getTopMoviesFromDB();
-
-           if(moviesFromDB!=null) {
-               movies = new MutableLiveData<>();
-               movies.setValue(moviesFromDB);
-               Log.d(TAG, "Returning from DB " +movies.getValue().get(0).title);
-                return movies;
-           }
-        }
-
-        Log.d(TAG, "Returning from Network");
-        movies = new MutableLiveData<>();
-
-        Call<MovieResponse> call = getMoviesWebService().listTopRatedMovies(API_KEY);
-
-        //async request
-        enqueueMovies(call);
-
-        return movies;
-
-    }
 
     public LiveData<List<Video>> fetchTrailers(int movieId) {
-        if(trailers==null) {
+        if (trailers == null) {
             trailers = new MutableLiveData<>();
         }
 
@@ -145,7 +155,7 @@ public class MovieRepository {
     }
 
     public LiveData<List<Review>> fetchReviews(int movieId) {
-        if(reviews==null) {
+        if (reviews == null) {
             reviews = new MutableLiveData<>();
         }
 
@@ -159,8 +169,8 @@ public class MovieRepository {
             @Override
             public void onResponse(@NonNull Call<ReviewResponse> call, @NonNull Response<ReviewResponse> response) {
                 //noinspection HardCodedStringLiteral
-                Log.d(TAG, "Response status code: "+ response.code());
-                if(!response.isSuccessful()) {
+                Log.d(TAG, "Response status code: " + response.code());
+                if (!response.isSuccessful()) {
 
                     try {
                         Log.d(TAG, response.errorBody().string());
@@ -170,7 +180,7 @@ public class MovieRepository {
                     return;
                 }
                 ReviewResponse decodedResponse = response.body();
-                if(decodedResponse==null) return;
+                if (decodedResponse == null) return;
 
                 Log.d("EnqueueReviews", "Successful response!");
                 reviews.postValue(decodedResponse.results);
@@ -191,8 +201,8 @@ public class MovieRepository {
             @Override
             public void onResponse(@NonNull Call<VideoResponse> call, @NonNull Response<VideoResponse> response) {
                 //noinspection HardCodedStringLiteral
-                Log.d(TAG, "Response status code: "+ response.code());
-                if(!response.isSuccessful()) {
+                Log.d(TAG, "Response status code: " + response.code());
+                if (!response.isSuccessful()) {
 
                     try {
                         Log.d(TAG, response.errorBody().string());
@@ -203,7 +213,7 @@ public class MovieRepository {
                 }
 
                 VideoResponse decodedResponse = response.body();
-                if(decodedResponse==null) return;
+                if (decodedResponse == null) return;
 
                 Log.d("EnqueueTrailers", "Successful response!");
 
@@ -221,14 +231,14 @@ public class MovieRepository {
         return trailers;
     }
 
-    private void enqueueMovies(Call<MovieResponse> call) {
+    private void requestMoviesFromAPI(Call<MovieResponse> call) {
         call.enqueue(new Callback<MovieResponse>() {
             @Override
             public void onResponse(@NonNull Call<MovieResponse> call, @NonNull Response<MovieResponse> response) {
                 //noinspection HardCodedStringLiteral
-                Log.d(TAG, "Response status code: "+ response.code());
+                Log.d(TAG, "Response status code: " + response.code());
 
-                if(!response.isSuccessful()) {
+                if (!response.isSuccessful()) {
                     try {
                         Log.d(TAG, response.errorBody().string());
                     } catch (IOException e) {
@@ -238,7 +248,7 @@ public class MovieRepository {
                 }
 
                 MovieResponse decodedResponse = response.body();
-                if(decodedResponse==null) return;
+                if (decodedResponse == null) return;
 
                 Log.d("EnqueueMovies", "Successful response!");
                 saveMovieCacheToDisk(decodedResponse.results);
@@ -263,14 +273,14 @@ public class MovieRepository {
 
         ContentValues[] cv = new ContentValues[results.size()];
         int index = 0;
-        for(Movie movie: results) {
+        for (Movie movie : results) {
             ContentValues contentValues = getMovieContentValues(movie);
             cv[index++] = contentValues;
         }
 
         int inserted = contentResolver.bulkInsert(TopMoviesEntry.CONTENT_URI, cv);
 
-        Log.d(TAG, "Inserted "+ inserted + " rows into DiskCache");
+        Log.d(TAG, "Inserted " + inserted + " rows into DiskCache");
     }
 
     private void deleteOldCache() {
@@ -278,13 +288,13 @@ public class MovieRepository {
 
         deleted = contentResolver.delete(TopMoviesEntry.CONTENT_URI, null, null);
 
-        Log.d(TAG, "Deleted: "+deleted + " from DiskCache");
+        Log.d(TAG, "Deleted: " + deleted + " from DiskCache");
     }
 
     private void mapMovies(List<Movie> results) {
         movieCache = new HashMap<>();
 
-        for(Movie movie : results) {
+        for (Movie movie : results) {
             movieCache.put(movie.id, movie);
         }
     }
@@ -306,7 +316,7 @@ public class MovieRepository {
 
     public void addToFavorites(int movieId) {
 
-        if (movieCache!=null) {
+        if (movieCache != null) {
             Uri uri = ContentUris.withAppendedId(DataContract.FavoriteMoviesEntry.CONTENT_URI, movieId);
             Movie movie = movieCache.get(movieId);
 
@@ -314,7 +324,7 @@ public class MovieRepository {
 
             uri = contentResolver.insert(uri, contentValues);
 
-            Log.d(TAG, "Added to favs: "+ uri.toString());
+            Log.d(TAG, "Added to favs: " + uri.toString());
             isFavorite.postValue(true);
         }
     }
@@ -344,20 +354,31 @@ public class MovieRepository {
         isFavorite.postValue(false);
     }
 
-    private List<Movie> fetchFavoriteMovies(String sortOrder) {
-        Uri uri = DataContract.FavoriteMoviesEntry.CONTENT_URI;
+    @SuppressLint("StaticFieldLeak")
+    private void fetchFavoriteMovies(String sortOrder) {
 
-        Cursor cursor = contentResolver.query(uri, null,null,null,sortOrder);
+        new AsyncTask<String,Void,List<Movie>>() {
 
-        List<Movie> result = getMoviesFromCursor(cursor);
-        mapMovies(result);
+            @Override
+            protected List<Movie> doInBackground(String... strings) {
+                String sortOrder = strings[0];
+                Uri uri = DataContract.FavoriteMoviesEntry.CONTENT_URI;
+                Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
+                return getMoviesFromCursor(cursor);
 
-        return result;
+            }
+
+            @Override
+            protected void onPostExecute(List<Movie> movies) {
+                MovieRepository.this.favoriteMovies.postValue(movies);
+                mapMovies(movies);
+            }
+        }.execute(sortOrder);
     }
 
     private List<Movie> getMoviesFromCursor(Cursor cursor) {
         List<Movie> movieList = new ArrayList<>();
-        while(cursor.moveToNext()) {
+        while (cursor.moveToNext()) {
             Movie movie = new Movie();
             movie.id = cursor.getInt(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.MOVIE_ID));
             movie.overview = cursor.getString(cursor.getColumnIndex(DataContract.FavoriteMoviesEntry.OVERVIEW));
@@ -376,20 +397,21 @@ public class MovieRepository {
 
 
     public LiveData<List<Movie>> getPopularFavorites() {
-        if(favoriteMovies == null) {
+        if (favoriteMovies == null) {
             favoriteMovies = new MutableLiveData<>();
         }
-        favoriteMovies.postValue(fetchFavoriteMovies(DataContract.FavoriteMoviesEntry.POPULARITY + " DESC"));
+        movies = null;
+        fetchFavoriteMovies(DataContract.FavoriteMoviesEntry.POPULARITY + " DESC");
 
         return favoriteMovies;
     }
 
     public LiveData<List<Movie>> getTopRatedFavorites() {
-        if(favoriteMovies == null) {
+        if (favoriteMovies == null) {
             favoriteMovies = new MutableLiveData<>();
         }
-
-        favoriteMovies.postValue(fetchFavoriteMovies(DataContract.FavoriteMoviesEntry.USER_RATING + " DESC"));
+        movies = null;
+        fetchFavoriteMovies(DataContract.FavoriteMoviesEntry.USER_RATING + " DESC");
 
         return favoriteMovies;
     }
@@ -397,13 +419,13 @@ public class MovieRepository {
     @NonNull
     public LiveData<Boolean> isFavorite(Integer movieId) {
 
-        if(isFavorite==null)
+        if (isFavorite == null)
             isFavorite = new MutableLiveData<>();
 
         Uri uri = ContentUris.withAppendedId(DataContract.FavoriteMoviesEntry.CONTENT_URI, movieId);
 
-        Cursor cursor  = contentResolver.query(uri, null, null, null, null);
-        if(cursor.getCount()>0) {
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
+        if (cursor.getCount() > 0) {
             isFavorite.postValue(true);
         } else {
             isFavorite.postValue(false);
@@ -416,7 +438,7 @@ public class MovieRepository {
 
     public LiveData<Movie> getMovie(Integer input) {
 
-        if(movie == null) {
+        if (movie == null) {
             movie = new MutableLiveData<>();
         }
 
