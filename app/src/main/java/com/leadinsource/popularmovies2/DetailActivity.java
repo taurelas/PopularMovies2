@@ -34,6 +34,8 @@ public class DetailActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this).get(DetailActivityViewModel.class);
 
+
+
         Intent intent = getIntent();
 
         if(intent!=null) {
