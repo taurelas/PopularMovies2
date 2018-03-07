@@ -23,8 +23,6 @@ import com.squareup.picasso.Picasso;
 public class DetailsFragment extends Fragment {
 
     private DetailActivityViewModel viewModel;
-    private ImageButton shareButton;
-    private RecyclerView rv;
     private FragmentDetailsBinding binding;
 
 

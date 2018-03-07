@@ -7,7 +7,6 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
@@ -20,7 +19,6 @@ import java.util.List;
 
 public class MainActivityViewModel extends AndroidViewModel {
 
-    private static final String TAG = MainActivityViewModel.class.getSimpleName();
     private static final String EXTRA_SORT_ORDER = "SORT_ORDER";
     private static final String EXTRA_LIST_TYPE = "LIST_TYPE";
     private SortOrder sortOrder;
@@ -33,12 +31,13 @@ public class MainActivityViewModel extends AndroidViewModel {
         super(application);
         this.resources = application.getResources();
         movieRepository = MovieRepository.getInstance(application.getContentResolver());
-
-
     }
 
-    public void init(Bundle savedInstanceState) {
-
+    /**
+     * Initializes view model and restores settings if anything of value in the bundle
+     * @param savedInstanceState
+     */
+    void init(Bundle savedInstanceState) {
         if(savedInstanceState!=null) {
             sortOrder = new SortOrder(savedInstanceState.getInt(EXTRA_SORT_ORDER, SortOrder.MOST_POPULAR));
             movieListType = new ListType(savedInstanceState.getInt(EXTRA_LIST_TYPE, ListType.TOP_MOVIES));
@@ -47,7 +46,6 @@ public class MainActivityViewModel extends AndroidViewModel {
             movieListType = new ListType(SortOrder.MOST_POPULAR);
         }
     }
-
 
     /**
      * Provides text to display in relation to Sort Order
@@ -72,10 +70,8 @@ public class MainActivityViewModel extends AndroidViewModel {
 
         movies = Transformations.switchMap(movieListType.getCurrent(), input -> {
             if (input == ListType.TOP_MOVIES) {
-                Log.d(TAG, "fetching TopMovies");
                 return getTopMovies();
             } else {
-                Log.d(TAG, "fetching Favorite Movies");
                 return getFavoriteMovies();
             }
         });
@@ -95,7 +91,6 @@ public class MainActivityViewModel extends AndroidViewModel {
             } else {
                 return getTopRatedMovies();
             }
-
         });
     }
 
@@ -112,7 +107,6 @@ public class MainActivityViewModel extends AndroidViewModel {
                 return movieRepository.getTopRatedFavorites();
             }
         });
-
     }
 
     /**
@@ -146,9 +140,7 @@ public class MainActivityViewModel extends AndroidViewModel {
      */
     private List<Movie> fixImageUrls(List<Movie> movies) {
         for (Movie movie : movies) {
-            Log.d(TAG, "Fixing url "+ movie.posterPath);
             movie.posterPath = IMAGE_PATH.concat(movie.posterPath);
-            Log.d(TAG, "Fixed url "+ movie.posterPath);
         }
 
         return movies;
@@ -179,19 +171,9 @@ public class MainActivityViewModel extends AndroidViewModel {
         movieListType.swap();
     }
 
-    void restoringState(Bundle inState) {
-        //sortOrder.current.postValue(inState.getInt("SORT_ORDER"));
-        //movieListType.current.postValue(inState.getInt("LIST_TYPE"));
-        Log.d(TAG, "restored sort ");
-    }
-
     void saveState(Bundle outState) {
         outState.putInt(EXTRA_SORT_ORDER, sortOrder.getCurrent().getValue());
-
-        Log.d(TAG, "Saving sort order " + (sortOrder.getCurrent().getValue()==SortOrder.HIGHEST_RATED ?
-                "highest rated" : "most popular"));
-
-        outState.putInt("LIST_TYPE", movieListType.getCurrent().getValue());
+        outState.putInt(EXTRA_LIST_TYPE, movieListType.getCurrent().getValue());
 
     }
 
@@ -217,8 +199,6 @@ public class MainActivityViewModel extends AndroidViewModel {
 
             sortByRatingText = MainActivityViewModel.this.resources.getString(R.string.sort_by_rating);
             sortByPopularityText = MainActivityViewModel.this.resources.getString(R.string.sort_by_popularity);
-
-
         }
 
         void swap() {
@@ -227,7 +207,6 @@ public class MainActivityViewModel extends AndroidViewModel {
             } else {
                 current.setValue(MOST_POPULAR);
             }
-
         }
 
         LiveData<String> getCurrentText() {
@@ -288,13 +267,11 @@ public class MainActivityViewModel extends AndroidViewModel {
                 });
             }
 
-
             return currentText;
         }
 
         LiveData<Integer> getCurrent() {
             return current;
         }
-
     }
 }
