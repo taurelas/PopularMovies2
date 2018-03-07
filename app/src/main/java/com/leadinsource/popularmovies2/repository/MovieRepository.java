@@ -79,12 +79,10 @@ public class MovieRepository {
                 movies = new MutableLiveData<>();
                 movies.setValue(moviesFromDB);
                 mapMovies(moviesFromDB);
-                Log.d(TAG, "Returning from DB " +movies.getValue().get(0).title);
                 return movies;
             }
         }
 
-        Log.d(TAG, "Returning from Network");
         movies = new MutableLiveData<>();
 
         Call<MovieResponse> call = getMoviesWebService().listPopularMovies(API_KEY);
@@ -104,7 +102,11 @@ public class MovieRepository {
             return null;
         }
 
-        return getMoviesFromCursor(cursor);
+        List<Movie> result = getMoviesFromCursor(cursor);
+
+        mapMovies(result);
+
+        return result;
     }
 
     public LiveData<List<Movie>> fetchTopRatedMovies() {
@@ -347,7 +349,10 @@ public class MovieRepository {
 
         Cursor cursor = contentResolver.query(uri, null,null,null,sortOrder);
 
-        return getMoviesFromCursor(cursor);
+        List<Movie> result = getMoviesFromCursor(cursor);
+        mapMovies(result);
+
+        return result;
     }
 
     private List<Movie> getMoviesFromCursor(Cursor cursor) {

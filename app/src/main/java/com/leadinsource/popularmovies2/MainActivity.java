@@ -6,7 +6,6 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -17,7 +16,6 @@ import com.leadinsource.popularmovies2.databinding.ActivityMainBinding;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
     private ActivityMainBinding binding;
     private MainActivityViewModel viewModel;
     private MenuItem sortSwitch;
@@ -28,11 +26,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "OnCreate");
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-
         viewModel.init(savedInstanceState);
 
 
@@ -51,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
                 adapter.updateData(data);
             }
         });
-
     }
 
     /**
@@ -64,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Inflates the menu and launches observations of texts
+     * @param menu Menu element
+     * @return true to display the menu
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -108,15 +108,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         viewModel.saveState(outState);
-        Log.d(TAG, "OnSaveInstanceState");
         super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Log.d(TAG, "OnRestoreInstanceState");
-        viewModel.restoringState(savedInstanceState);
-        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -124,12 +116,4 @@ public class MainActivity extends AppCompatActivity {
         viewModel.clearState();
         super.finish();
     }
-
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "Destroyed");
-        super.onDestroy();
-    }
-
-
 }
