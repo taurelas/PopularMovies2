@@ -13,7 +13,7 @@ import android.util.Log;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.leadinsource.popularmovies2.BuildConfig;
 import com.leadinsource.popularmovies2.db.DataContract;
-import com.leadinsource.popularmovies2.db.DataContract.PopularMoviesEntry;
+import com.leadinsource.popularmovies2.db.DataContract.TopMoviesEntry;
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
@@ -36,7 +36,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Single source of truth for the app
- * TODO optimize code
+ * TODO optimize code: maybe DBOps.class that handles operations with database and network helper
+ * that handles network tasks
  */
 
 public class MovieRepository {
@@ -72,28 +73,30 @@ public class MovieRepository {
 
         if(movies == null) {
 
-            List<Movie> moviesFromDB = getPopularMoviesFromDB();
+            List<Movie> moviesFromDB = getTopMoviesFromDB();
 
             if(moviesFromDB!=null) {
                 movies = new MutableLiveData<>();
                 movies.setValue(moviesFromDB);
-                cacheMovies(moviesFromDB);
+                mapMovies(moviesFromDB);
                 Log.d(TAG, "Returning from DB " +movies.getValue().get(0).title);
                 return movies;
             }
         }
-        Log.d(TAG, "Returning from Internet");
+
+        Log.d(TAG, "Returning from Network");
         movies = new MutableLiveData<>();
 
         Call<MovieResponse> call = getMoviesWebService().listPopularMovies(API_KEY);
+        //async request
         enqueueMovies(call);
 
         return movies;
     }
 
-    private List<Movie> getPopularMoviesFromDB() {
+    private List<Movie> getTopMoviesFromDB() {
 
-        Uri uri = PopularMoviesEntry.CONTENT_URI;
+        Uri uri = TopMoviesEntry.CONTENT_URI;
 
         Cursor cursor = contentResolver.query(uri, null, null, null,null);
 
@@ -106,8 +109,19 @@ public class MovieRepository {
 
     public LiveData<List<Movie>> fetchTopRatedMovies() {
         if(movies == null) {
-            movies = new MutableLiveData<>();
+
+           List<Movie> moviesFromDB = getTopMoviesFromDB();
+
+           if(moviesFromDB!=null) {
+               movies = new MutableLiveData<>();
+               movies.setValue(moviesFromDB);
+               Log.d(TAG, "Returning from DB " +movies.getValue().get(0).title);
+                return movies;
+           }
         }
+
+        Log.d(TAG, "Returning from Network");
+        movies = new MutableLiveData<>();
 
         Call<MovieResponse> call = getMoviesWebService().listTopRatedMovies(API_KEY);
 
@@ -213,7 +227,6 @@ public class MovieRepository {
                 Log.d(TAG, "Response status code: "+ response.code());
 
                 if(!response.isSuccessful()) {
-
                     try {
                         Log.d(TAG, response.errorBody().string());
                     } catch (IOException e) {
@@ -226,25 +239,26 @@ public class MovieRepository {
                 if(decodedResponse==null) return;
 
                 Log.d("EnqueueMovies", "Successful response!");
-                cacheMovies(decodedResponse.results);
-                persistMovies(decodedResponse.results);
+                saveMovieCacheToDisk(decodedResponse.results);
+                mapMovies(decodedResponse.results);
                 movies.postValue(decodedResponse.results);
             }
 
 
             @Override
             public void onFailure(@NonNull Call<MovieResponse> call, @NonNull Throwable t) {
-                Log.d(TAG, "onFailure");
+                movies.postValue(new ArrayList<>());
+                Log.d(TAG, "provides empty list");
                 Log.d(TAG, t.getMessage());
             }
         });
 
     }
 
-    private void persistMovies(List<Movie> results) {
+    private void saveMovieCacheToDisk(List<Movie> results) {
 
-        Uri uri = PopularMoviesEntry.CONTENT_URI;
-        contentResolver.delete(uri, null, null);
+        deleteOldCache();
+
         ContentValues[] cv = new ContentValues[results.size()];
         int index = 0;
         for(Movie movie: results) {
@@ -252,10 +266,20 @@ public class MovieRepository {
             cv[index++] = contentValues;
         }
 
-        contentResolver.bulkInsert(uri, cv);
+        int inserted = contentResolver.bulkInsert(TopMoviesEntry.CONTENT_URI, cv);
+
+        Log.d(TAG, "Inserted "+ inserted + " rows into DiskCache");
     }
 
-    private void cacheMovies(List<Movie> results) {
+    private void deleteOldCache() {
+        int deleted;
+
+        deleted = contentResolver.delete(TopMoviesEntry.CONTENT_URI, null, null);
+
+        Log.d(TAG, "Deleted: "+deleted + " from DiskCache");
+    }
+
+    private void mapMovies(List<Movie> results) {
         movieCache = new HashMap<>();
 
         for(Movie movie : results) {
@@ -394,5 +418,9 @@ public class MovieRepository {
         movie.setValue(movieCache.get(input));
 
         return movie;
+    }
+
+    public void clearDiskCache() {
+        deleteOldCache();
     }
 }

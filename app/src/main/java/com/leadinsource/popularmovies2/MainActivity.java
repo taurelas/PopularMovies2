@@ -4,7 +4,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
@@ -29,10 +28,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.d(TAG, "OnCreate");
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+
+        viewModel.init(savedInstanceState);
+
 
         viewModel.getMoviesData().observe(this, data -> {
             if(binding.recyclerView.getAdapter()== null) {
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         sortSwitch = menu.findItem(R.id.sort_switch);
         listSwitch = menu.findItem(R.id.list_switch);
         observeSortOrder();
-        observeListType();
+        observeListTypeText();
 
         return true;
     }
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Starts observing type of movie list: either favorites or top-rated.
      */
-    private void observeListType() {
+    private void observeListTypeText() {
         viewModel.getMovieListType().observe(this, text -> {
             listSwitch.setTitle(text);
             onPrepareOptionsMenu(menu);
@@ -105,18 +107,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState");
+        viewModel.saveState(outState);
+        Log.d(TAG, "OnSaveInstanceState");
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Log.d(TAG, "onRestoreInstanceState");
+        Log.d(TAG, "OnRestoreInstanceState");
+        viewModel.restoringState(savedInstanceState);
         super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
     public void finish() {
+        viewModel.clearState();
         super.finish();
     }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "Destroyed");
+        super.onDestroy();
+    }
+
+
 }

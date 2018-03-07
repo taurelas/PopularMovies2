@@ -35,7 +35,7 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
 
         db.execSQL(SQL_CREATE_TABLE);
 
-        final String SQL_CREATE_POPULAR_MOVIES_TABLE = "CREATE TABLE " + DataContract.PopularMoviesEntry.TABLE_NAME + " (" +
+        final String SQL_CREATE_POPULAR_MOVIES_TABLE = "CREATE TABLE " + DataContract.TopMoviesEntry.TABLE_NAME + " (" +
                 FavoriteMoviesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 FavoriteMoviesEntry.MOVIE_ID + " INTEGER, " +
                 FavoriteMoviesEntry.TITLE + " TEXT, " +
@@ -51,7 +51,7 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + FavoriteMoviesEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DataContract.PopularMoviesEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DataContract.TopMoviesEntry.TABLE_NAME);
         onCreate(db);
     }
 }

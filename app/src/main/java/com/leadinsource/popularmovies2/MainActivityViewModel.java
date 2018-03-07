@@ -5,9 +5,9 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
-import android.arch.lifecycle.ViewModel;
 import android.content.res.Resources;
-import android.database.Cursor;
+import android.os.Bundle;
+import android.util.Log;
 
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
@@ -20,8 +20,11 @@ import java.util.List;
 
 public class MainActivityViewModel extends AndroidViewModel {
 
-    private final SortOrder sortOrder;
-    private final ListType movieListType;
+    private static final String TAG = MainActivityViewModel.class.getSimpleName();
+    private static final String EXTRA_SORT_ORDER = "SORT_ORDER";
+    private static final String EXTRA_LIST_TYPE = "LIST_TYPE";
+    private SortOrder sortOrder;
+    private ListType movieListType;
     private final MovieRepository movieRepository;
     private final Resources resources;
     private LiveData<List<Movie>> movies;
@@ -30,9 +33,21 @@ public class MainActivityViewModel extends AndroidViewModel {
         super(application);
         this.resources = application.getResources();
         movieRepository = MovieRepository.getInstance(application.getContentResolver());
-        sortOrder = new SortOrder();
-        movieListType = new ListType();
+
+
     }
+
+    public void init(Bundle savedInstanceState) {
+
+        if(savedInstanceState!=null) {
+            sortOrder = new SortOrder(savedInstanceState.getInt(EXTRA_SORT_ORDER, SortOrder.MOST_POPULAR));
+            movieListType = new ListType(savedInstanceState.getInt(EXTRA_LIST_TYPE, ListType.TOP_MOVIES));
+        } else {
+            sortOrder = new SortOrder(SortOrder.MOST_POPULAR);
+            movieListType = new ListType(SortOrder.MOST_POPULAR);
+        }
+    }
+
 
     /**
      * Provides text to display in relation to Sort Order
@@ -44,7 +59,7 @@ public class MainActivityViewModel extends AndroidViewModel {
     }
 
     /**
-     * This is a single access point for MainActivity, point where last Transformations
+     * This is a single access point for MainActivity for movie data, point where last Transformations
      * take place. At this stage it includes provision of Top Movies or Favorite Movies based
      * on the current user choice
      *
@@ -57,8 +72,10 @@ public class MainActivityViewModel extends AndroidViewModel {
 
         movies = Transformations.switchMap(movieListType.getCurrent(), input -> {
             if (input == ListType.TOP_MOVIES) {
+                Log.d(TAG, "fetching TopMovies");
                 return getTopMovies();
             } else {
+                Log.d(TAG, "fetching Favorite Movies");
                 return getFavoriteMovies();
             }
         });
@@ -129,7 +146,9 @@ public class MainActivityViewModel extends AndroidViewModel {
      */
     private List<Movie> fixImageUrls(List<Movie> movies) {
         for (Movie movie : movies) {
+            Log.d(TAG, "Fixing url "+ movie.posterPath);
             movie.posterPath = IMAGE_PATH.concat(movie.posterPath);
+            Log.d(TAG, "Fixed url "+ movie.posterPath);
         }
 
         return movies;
@@ -160,26 +179,46 @@ public class MainActivityViewModel extends AndroidViewModel {
         movieListType.swap();
     }
 
+    void restoringState(Bundle inState) {
+        //sortOrder.current.postValue(inState.getInt("SORT_ORDER"));
+        //movieListType.current.postValue(inState.getInt("LIST_TYPE"));
+        Log.d(TAG, "restored sort ");
+    }
+
+    void saveState(Bundle outState) {
+        outState.putInt(EXTRA_SORT_ORDER, sortOrder.getCurrent().getValue());
+
+        Log.d(TAG, "Saving sort order " + (sortOrder.getCurrent().getValue()==SortOrder.HIGHEST_RATED ?
+                "highest rated" : "most popular"));
+
+        outState.putInt("LIST_TYPE", movieListType.getCurrent().getValue());
+
+    }
+
+    public void clearState() {
+        movieRepository.clearDiskCache();
+    }
+
     /**
      * Handles all sort-related issues
      */
     private class SortOrder {
-        private static final int MOST_POPULAR = 1;
+        static final int MOST_POPULAR = 1;
         private static final int HIGHEST_RATED = 2;
 
         private final MutableLiveData<Integer> current;
-        private final MutableLiveData<String> currentText;
+        private LiveData<String> currentText;
         private final String sortByRatingText;
         private final String sortByPopularityText;
 
-        SortOrder() {
+        SortOrder(int sort) {
             current = new MutableLiveData<>();
-            current.setValue(MOST_POPULAR);
+            current.setValue(sort);
 
             sortByRatingText = MainActivityViewModel.this.resources.getString(R.string.sort_by_rating);
             sortByPopularityText = MainActivityViewModel.this.resources.getString(R.string.sort_by_popularity);
-            currentText = new MutableLiveData<>();
-            currentText.setValue(sortByRatingText);
+
+
         }
 
         void swap() {
@@ -189,18 +228,19 @@ public class MainActivityViewModel extends AndroidViewModel {
                 current.setValue(MOST_POPULAR);
             }
 
-            swapText();
-        }
-
-        private void swapText() {
-            if (current.getValue() == MOST_POPULAR) {
-                currentText.setValue(sortByRatingText);
-            } else {
-                currentText.setValue(sortByPopularityText);
-            }
         }
 
         LiveData<String> getCurrentText() {
+            if(currentText==null) {
+                currentText = Transformations.map(current, input -> {
+                    if(input==MOST_POPULAR) {
+                        return sortByRatingText;
+                    } else {
+                        return sortByPopularityText;
+                    }
+                });
+            }
+
             return currentText;
         }
 
@@ -217,19 +257,16 @@ public class MainActivityViewModel extends AndroidViewModel {
         static final int FAVORITE_MOVIES = 2;
 
         private final MutableLiveData<Integer> current;
-        private final MutableLiveData<String> currentText;
+        private LiveData<String> currentText;
         private final String showTopMoviesText;
         private final String showFavoriteMoviesText;
 
-        ListType() {
+        ListType(int type) {
             current = new MutableLiveData<>();
-            current.setValue(TOP_MOVIES);
+            current.setValue(type);
 
             showTopMoviesText = resources.getString(R.string.show_top_movies);
             showFavoriteMoviesText = resources.getString(R.string.show_favorites_movies);
-
-            currentText = new MutableLiveData<>();
-            currentText.setValue(showFavoriteMoviesText);
         }
 
         void swap() {
@@ -238,19 +275,20 @@ public class MainActivityViewModel extends AndroidViewModel {
             } else {
                 current.setValue(TOP_MOVIES);
             }
-
-            swapText();
-        }
-
-        private void swapText() {
-            if (current.getValue() == TOP_MOVIES) {
-                currentText.setValue(showFavoriteMoviesText);
-            } else {
-                currentText.setValue(showTopMoviesText);
-            }
-        }
+                }
 
         LiveData<String> getCurrentText() {
+            if(currentText==null) {
+                currentText = Transformations.map(current, input -> {
+                    if(input==TOP_MOVIES) {
+                        return showFavoriteMoviesText;
+                    } else {
+                        return showTopMoviesText;
+                    }
+                });
+            }
+
+
             return currentText;
         }
 

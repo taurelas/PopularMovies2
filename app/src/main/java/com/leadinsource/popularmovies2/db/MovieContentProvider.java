@@ -12,7 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.leadinsource.popularmovies2.db.DataContract.FavoriteMoviesEntry;
-import com.leadinsource.popularmovies2.db.DataContract.PopularMoviesEntry;
+import com.leadinsource.popularmovies2.db.DataContract.TopMoviesEntry;
 
 /**
  * Content Provider for Favorite Movies saved to the device
@@ -34,7 +34,7 @@ public class MovieContentProvider extends ContentProvider {
 
         uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_FAVORITE_MOVIES, FAVORITE_MOVIES);
         uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_FAVORITE_MOVIES + "/#", FAVORITE_MOVIES_WITH_ID);
-        uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_POPULAR_MOVIES, POPULAR_MOVIES);
+        uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_TOP_MOVIES, POPULAR_MOVIES);
 
         return uriMatcher;
     }
@@ -79,7 +79,7 @@ public class MovieContentProvider extends ContentProvider {
                         sortOrder);
                 break;
             case POPULAR_MOVIES:
-                retCursor = db.query(PopularMoviesEntry.TABLE_NAME,
+                retCursor = db.query(TopMoviesEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -145,7 +145,7 @@ public class MovieContentProvider extends ContentProvider {
                 deleted = db.delete(FavoriteMoviesEntry.TABLE_NAME, idSelection, idSelectionArgs);
                 break;
             case POPULAR_MOVIES:
-                deleted = db.delete(PopularMoviesEntry.TABLE_NAME, null, null);
+                deleted = db.delete(TopMoviesEntry.TABLE_NAME, null, null);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
@@ -185,7 +185,7 @@ public class MovieContentProvider extends ContentProvider {
         db.beginTransaction();
         try {
             for (ContentValues cv : values) {
-                long newId = db.insertOrThrow(PopularMoviesEntry.TABLE_NAME, null, cv);
+                long newId = db.insertOrThrow(TopMoviesEntry.TABLE_NAME, null, cv);
                 if (newId <= 0) {
                     throw new SQLException("Failed to insert row into " + uri);
                 }
