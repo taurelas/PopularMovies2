@@ -5,14 +5,12 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.leadinsource.popularmovies2.db.DataContract.FavoriteMoviesEntry;
-import com.leadinsource.popularmovies2.db.DataContract.TopMoviesEntry;
 
 /**
  * Content Provider for Favorite Movies saved to the device
@@ -24,8 +22,6 @@ public class MovieContentProvider extends ContentProvider {
 
     public static final int FAVORITE_MOVIES = 100;
     public static final int FAVORITE_MOVIES_WITH_ID = 101;
-    public static final int POPULAR_MOVIES = 200;
-
 
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
@@ -34,7 +30,6 @@ public class MovieContentProvider extends ContentProvider {
 
         uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_FAVORITE_MOVIES, FAVORITE_MOVIES);
         uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_FAVORITE_MOVIES + "/#", FAVORITE_MOVIES_WITH_ID);
-        uriMatcher.addURI(DataContract.AUTHORITY, DataContract.PATH_TOP_MOVIES, POPULAR_MOVIES);
 
         return uriMatcher;
     }
@@ -78,15 +73,7 @@ public class MovieContentProvider extends ContentProvider {
                         null,
                         sortOrder);
                 break;
-            case POPULAR_MOVIES:
-                retCursor = db.query(TopMoviesEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder);
-                break;
+
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -144,9 +131,6 @@ public class MovieContentProvider extends ContentProvider {
 
                 deleted = db.delete(FavoriteMoviesEntry.TABLE_NAME, idSelection, idSelectionArgs);
                 break;
-            case POPULAR_MOVIES:
-                deleted = db.delete(TopMoviesEntry.TABLE_NAME, null, null);
-                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
         }
@@ -164,7 +148,7 @@ public class MovieContentProvider extends ContentProvider {
     }
 
     /**
-     * Taken from https://stackoverflow.com/a/12732282/3886459
+     * Unused
      *
      * @param uri    determines what action (if any) the provider will execute
      * @param values Array of ContentValues to be inserted into database
@@ -172,31 +156,8 @@ public class MovieContentProvider extends ContentProvider {
      */
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
-        int inserted = 0;
 
-        int uriMatch = uriMatcher.match(uri);
+        throw new UnsupportedOperationException("Unknown uri " + uri);
 
-        // this works only for popular movies for the moment
-        if (uriMatch != POPULAR_MOVIES) {
-            throw new UnsupportedOperationException("Unknown uri " + uri);
-        }
-
-        SQLiteDatabase db = moviesDbHelper.getWritableDatabase();
-        db.beginTransaction();
-        try {
-            for (ContentValues cv : values) {
-                long newId = db.insertOrThrow(TopMoviesEntry.TABLE_NAME, null, cv);
-                if (newId <= 0) {
-                    throw new SQLException("Failed to insert row into " + uri);
-                }
-            }
-            db.setTransactionSuccessful();
-            getContext().getContentResolver().notifyChange(uri, null);
-            inserted = values.length;
-        } finally {
-            db.endTransaction();
-        }
-
-        return inserted;
     }
 }

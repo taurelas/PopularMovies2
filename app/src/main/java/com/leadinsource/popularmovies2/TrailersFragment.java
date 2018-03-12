@@ -18,7 +18,6 @@ import android.widget.ImageButton;
  */
 public class TrailersFragment extends Fragment {
 
-    private DetailActivityViewModel viewModel;
     private ImageButton shareButton;
     private RecyclerView rv;
 
@@ -35,7 +34,7 @@ public class TrailersFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_trailers, container, false);
 
-        viewModel = ViewModelProviders.of(getActivity()).get(DetailActivityViewModel.class);
+        DetailActivityViewModel viewModel = ViewModelProviders.of(getActivity()).get(DetailActivityViewModel.class);
 
         rv = view.findViewById(R.id.rvTrailers);
         shareButton = view.findViewById(R.id.shareButton);
@@ -52,10 +51,13 @@ public class TrailersFragment extends Fragment {
             }));
 
             shareButton.setOnClickListener(v -> {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, videos.get(0).getKey());
-                shareIntent.setType("text/plain");
-                startActivity(shareIntent);
+                if(videos!=null && videos.get(0)!=null) {
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, videos.get(0).getKey());
+                    shareIntent.setType("text/plain");
+                    startActivity(shareIntent);
+                }
+
             });
 
         });

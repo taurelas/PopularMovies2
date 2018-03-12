@@ -4,15 +4,12 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.leadinsource.popularmovies2.databinding.ActivityDetailBinding;
-import com.leadinsource.popularmovies2.model.Movie;
-import com.squareup.picasso.Picasso;
 
 /**
  * Displays details of a movie that was selected in MainActivity

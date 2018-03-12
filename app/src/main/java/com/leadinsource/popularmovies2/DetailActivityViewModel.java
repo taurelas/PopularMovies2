@@ -31,7 +31,6 @@ public class DetailActivityViewModel extends AndroidViewModel {
     private LiveData<Boolean> isFavorite;
     private MutableLiveData<Boolean> isFavoriteCache;
     private LiveData<List<Video>> trailers;
-    private MutableLiveData<List<Video>> trailersCache;
     private MutableLiveData<Integer> movieId;
     private LiveData<List<Review>> reviews;
     private MovieRepository movieRepository;
@@ -40,7 +39,7 @@ public class DetailActivityViewModel extends AndroidViewModel {
     public DetailActivityViewModel(Application application) {
         super(application);
 
-        if(movieId ==null) {
+        if (movieId == null) {
             movieId = new MutableLiveData<>();
         }
 
@@ -50,10 +49,11 @@ public class DetailActivityViewModel extends AndroidViewModel {
 
     /**
      * Initializes view model and restores settings if anything of value in the bundle
+     *
      * @param savedInstanceState
      */
     void init(Bundle savedInstanceState) {
-        if(savedInstanceState!=null) {
+        if (savedInstanceState != null) {
             Log.d(TAG, "Restoring state");
 
             movieRepository.setTrailers(savedInstanceState.getParcelableArrayList(TRAILER_EXTRA));
@@ -65,7 +65,7 @@ public class DetailActivityViewModel extends AndroidViewModel {
     }
 
     LiveData<Movie> getMovie() {
-        if(movie==null) {
+        if (movie == null) {
             movie = Transformations.switchMap(movieId, input -> movieRepository.getCachedMovie(input));
         }
 
@@ -74,20 +74,11 @@ public class DetailActivityViewModel extends AndroidViewModel {
 
     /**
      * When MovieId changes, it will check whether the movie is favorite or not
+     *
      * @return boolean to be observed
      */
-    @NonNull
     LiveData<Boolean> isFavorite() {
-        if(isFavoriteCache!= null) {
-            return isFavoriteCache;
-        } else {
-            return isFavoriteNetwork();
-        }
-
-    }
-
-    LiveData<Boolean> isFavoriteNetwork() {
-        if(isFavorite==null) {
+        if (isFavorite == null) {
             isFavorite = Transformations.switchMap(movieId, input ->
                     movieRepository.isFavorite(input));
         }
@@ -100,7 +91,7 @@ public class DetailActivityViewModel extends AndroidViewModel {
      */
     void switchFavorite() {
 
-        if(isFavorite.getValue()) {
+        if (isFavorite.getValue()) {
             movieRepository.removeFromFavorites(movieId.getValue());
         } else {
             movieRepository.addToFavorites(movieId.getValue());
@@ -110,10 +101,11 @@ public class DetailActivityViewModel extends AndroidViewModel {
 
     /**
      * Fixes Urls in trailers and make the trailers accessible to clients
+     *
      * @return list of trailers wrapped in LiveData
      */
     LiveData<List<Video>> getTrailers() {
-        if(trailers==null) {
+        if (trailers == null) {
 
             trailers = Transformations.switchMap(movieId,
                     input -> movieRepository.fetchTrailers(input));
@@ -124,7 +116,7 @@ public class DetailActivityViewModel extends AndroidViewModel {
     }
 
     void setMovieId(int movieId) {
-        if(this.movieId==null) {
+        if (this.movieId == null) {
             this.movieId = new MutableLiveData<>();
         }
 
@@ -132,7 +124,7 @@ public class DetailActivityViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Review>> getReviews() {
-        if(reviews== null) {
+        if (reviews == null) {
             reviews = Transformations.switchMap(movieId,
                     input -> movieRepository.fetchReviews(input));
         }
@@ -145,9 +137,5 @@ public class DetailActivityViewModel extends AndroidViewModel {
         outState.putParcelableArrayList(TRAILER_EXTRA, (ArrayList<Video>) trailers.getValue());
         outState.putParcelableArrayList(REVIEWS_EXTRA, (ArrayList<Review>) reviews.getValue());
         outState.putBoolean(FAVORITE_EXTRA, isFavorite.getValue());
-    }
-
-    public void clearCache() {
-        movieRepository.clearMovieDetailCache();
     }
 }

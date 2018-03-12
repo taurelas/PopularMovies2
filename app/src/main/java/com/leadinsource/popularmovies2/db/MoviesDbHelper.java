@@ -34,24 +34,11 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 ");";
 
         db.execSQL(SQL_CREATE_TABLE);
-
-        final String SQL_CREATE_POPULAR_MOVIES_TABLE = "CREATE TABLE " + DataContract.TopMoviesEntry.TABLE_NAME + " (" +
-                FavoriteMoviesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                FavoriteMoviesEntry.MOVIE_ID + " INTEGER, " +
-                FavoriteMoviesEntry.TITLE + " TEXT, " +
-                FavoriteMoviesEntry.POSTER_URL + " TEXT, " +
-                FavoriteMoviesEntry.OVERVIEW + " TEXT, " +
-                FavoriteMoviesEntry.USER_RATING + " FLOAT, " +
-                FavoriteMoviesEntry.RELEASE_DATE + " TEXT," +
-                FavoriteMoviesEntry.POPULARITY + " FLOAT" +
-                ");";
-        db.execSQL(SQL_CREATE_POPULAR_MOVIES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + FavoriteMoviesEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DataContract.TopMoviesEntry.TABLE_NAME);
         onCreate(db);
     }
 }
