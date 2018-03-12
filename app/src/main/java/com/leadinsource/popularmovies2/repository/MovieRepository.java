@@ -26,7 +26,6 @@ import com.leadinsource.popularmovies2.net.VideoResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -46,6 +45,8 @@ public class MovieRepository {
 
     private static MovieRepository INSTANCE;
 
+    private Cache cache = new Cache();
+
     private static final String API_KEY = BuildConfig.API_KEY;
     private static final String BASE_URL = "https://api.themoviedb.org";
     private static final String TAG = "Repository";
@@ -54,10 +55,9 @@ public class MovieRepository {
     private MutableLiveData<List<Movie>> movies;
     private MutableLiveData<List<Movie>> favoriteMovies;
     private MutableLiveData<Boolean> isFavorite;
-    private HashMap<Integer, Movie> movieCache;
+
     private MutableLiveData<List<Video>> trailers;
     private MutableLiveData<List<Review>> reviews;
-    private MutableLiveData<Movie> movie;
 
     private MovieRepository(ContentResolver contentResolver) {
         this.contentResolver = contentResolver;
@@ -75,16 +75,20 @@ public class MovieRepository {
 
         Call call = getMoviesWebService().listPopularMovies(API_KEY);
 
+        LiveData<List<Movie>> cached = cache.getCachedPopularMovies();
+
+        if(cached != null) {
+            return cached;
+        }
+
         if (movies == null) {
             movies = new MutableLiveData<>();
-
-            new DbTopMoviesTask().execute(call);
-
-        } else {
-
-            //async request
-            requestMoviesFromAPI(call);
         }
+
+
+
+        //async request
+        requestMoviesFromAPI(call, POPULAR);
 
         return movies;
     }
@@ -93,14 +97,71 @@ public class MovieRepository {
 
         Call call = getMoviesWebService().listTopRatedMovies(API_KEY);
 
-        if (movies == null) {
-            movies = new MutableLiveData<>();
-            new DbTopMoviesTask().execute(call);
-        } else {
-            requestMoviesFromAPI(call);
+        LiveData<List<Movie>> cached = cache.getCachedTopRatedMovies();
+
+        if(cached != null) {
+            return cached;
         }
 
+
+        if (movies == null) {
+            movies = new MutableLiveData<>();
+
+        }
+        requestMoviesFromAPI(call, TOP_RATED);
+
         return movies;
+    }
+
+    public void setMovie(Movie movie) {
+        cache.put(movie);
+    }
+
+    public void setTrailers(List<Video> trailers) {
+        if (this.trailers == null) {
+            this.trailers = new MutableLiveData<>();
+        }
+        this.trailers.setValue(trailers);
+    }
+
+    public void setReviews(List<Review> reviews) {
+        if (this.reviews == null) {
+            this.reviews = new MutableLiveData<>();
+        }
+        this.reviews.setValue(reviews);
+    }
+
+    public void setFavorite(boolean aBoolean) {
+        if (this.isFavorite == null) {
+            this.isFavorite = new MutableLiveData<>();
+        }
+
+        this.isFavorite.setValue(aBoolean);
+    }
+
+    public LiveData<List<Movie>> setMovies(List<Movie> movies) {
+        if(this.movies==null) {
+            this.movies = new MutableLiveData<>();
+        }
+
+        this.movies.postValue(movies);
+        return this.movies;
+    }
+
+    public LiveData<List<Movie>> setFavoriteMovies(List<Movie> movies) {
+        this.favoriteMovies.setValue(movies);
+        return this.favoriteMovies;
+    }
+
+    public LiveData<List<Movie>> getMovies() {
+        if(movies==null)
+            movies = new MutableLiveData<>();
+
+        return movies;
+    }
+
+    public void clearMovieDetailCache() {
+        cache.clearMovieDetails();
     }
 
     // partly based on
@@ -119,9 +180,9 @@ public class MovieRepository {
         protected void onPostExecute(List<Movie> movies) {
             if (movies != null) {
                 MovieRepository.this.movies.setValue(movies);
-                mapMovies(movies);
+                cache.put(movies);
             } else {
-                requestMoviesFromAPI(call);
+                requestMoviesFromAPI(call, POPULAR);
             }
         }
     }
@@ -138,13 +199,22 @@ public class MovieRepository {
 
         List<Movie> result = getMoviesFromCursor(cursor);
 
-        mapMovies(result);
+        cache.put(result);
 
         return result;
     }
 
 
     public LiveData<List<Video>> fetchTrailers(int movieId) {
+
+        cache.setMovieId(movieId);
+
+        LiveData<List<Video>> cached = cache.getTrailers();
+
+        if(cached!=null) {
+            return cached;
+        }
+
         if (trailers == null) {
             trailers = new MutableLiveData<>();
         }
@@ -155,6 +225,15 @@ public class MovieRepository {
     }
 
     public LiveData<List<Review>> fetchReviews(int movieId) {
+
+        cache.setMovieId(movieId);
+
+        LiveData<List<Review>> cached = cache.getReviews();
+
+        if(cached!= null) {
+            return cached;
+        }
+
         if (reviews == null) {
             reviews = new MutableLiveData<>();
         }
@@ -169,7 +248,7 @@ public class MovieRepository {
             @Override
             public void onResponse(@NonNull Call<ReviewResponse> call, @NonNull Response<ReviewResponse> response) {
                 //noinspection HardCodedStringLiteral
-                Log.d(TAG, "Response status code: " + response.code());
+                //Log.d(TAG, "Response status code: " + response.code());
                 if (!response.isSuccessful()) {
 
                     try {
@@ -183,6 +262,7 @@ public class MovieRepository {
                 if (decodedResponse == null) return;
 
                 Log.d("EnqueueReviews", "Successful response!");
+                cache.putReviews(decodedResponse.results);
                 reviews.postValue(decodedResponse.results);
             }
 
@@ -190,6 +270,8 @@ public class MovieRepository {
             public void onFailure(@NonNull Call<ReviewResponse> call, @NonNull Throwable t) {
                 Log.d(TAG, "onFailure");
                 Log.d(TAG, t.getMessage());
+                // making the list empty
+                reviews.postValue(new ArrayList<>());
             }
         });
 
@@ -201,7 +283,7 @@ public class MovieRepository {
             @Override
             public void onResponse(@NonNull Call<VideoResponse> call, @NonNull Response<VideoResponse> response) {
                 //noinspection HardCodedStringLiteral
-                Log.d(TAG, "Response status code: " + response.code());
+                //Log.d(TAG, "Response status code: " + response.code());
                 if (!response.isSuccessful()) {
 
                     try {
@@ -214,89 +296,104 @@ public class MovieRepository {
 
                 VideoResponse decodedResponse = response.body();
                 if (decodedResponse == null) return;
-
+                List<Video> listWithFixedUrls = fixYouTubeUrls(decodedResponse.results);
                 Log.d("EnqueueTrailers", "Successful response!");
-
-                trailers.postValue(decodedResponse.results);
+                cache.putTrailers(listWithFixedUrls);
+                trailers.postValue(listWithFixedUrls);
 
             }
 
             @Override
             public void onFailure(@NonNull Call<VideoResponse> call, @NonNull Throwable t) {
-                Log.d(TAG, "onFailure");
+                Log.d(TAG, "Unsuccessful");
                 Log.d(TAG, t.getMessage());
+                trailers.postValue(new ArrayList<>());
             }
         });
 
         return trailers;
     }
 
-    private void requestMoviesFromAPI(Call<MovieResponse> call) {
-        call.enqueue(new Callback<MovieResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<MovieResponse> call, @NonNull Response<MovieResponse> response) {
-                //noinspection HardCodedStringLiteral
-                Log.d(TAG, "Response status code: " + response.code());
+    private List<Video> fixYouTubeUrls(List<Video> videos) {
+        String YT_PATH = "https://www.youtube.com/watch?v=";
 
-                if (!response.isSuccessful()) {
-                    try {
-                        Log.d(TAG, response.errorBody().string());
-                    } catch (IOException e) {
-                        // do nothing
-                    }
-                    return;
+        for (Video video : videos) {
+            video.key = YT_PATH.concat(video.key);
+        }
+
+        return videos;
+    }
+
+    public static final int POPULAR = 1;
+    public static final int TOP_RATED = 2;
+
+    private void requestMoviesFromAPI(Call<MovieResponse> call, int type) {
+        call.enqueue(new aCallback(type));
+
+    }
+
+    class aCallback implements Callback<MovieResponse> {
+
+        int type;
+
+        aCallback(int type) {
+            this.type = type;
+        }
+
+        @Override
+        public void onResponse(@NonNull Call<MovieResponse> call, @NonNull Response<MovieResponse> response) {
+            //noinspection HardCodedStringLiteral
+            Log.d(TAG, "Response status code: " + response.code());
+
+            if (!response.isSuccessful()) {
+                try {
+                    Log.d(TAG, response.errorBody().string());
+                } catch (IOException e) {
+                    // do nothing
                 }
-
-                MovieResponse decodedResponse = response.body();
-                if (decodedResponse == null) return;
-
-                Log.d("EnqueueMovies", "Successful response!");
-                saveMovieCacheToDisk(decodedResponse.results);
-                mapMovies(decodedResponse.results);
-                movies.postValue(decodedResponse.results);
+                return;
             }
 
+            MovieResponse decodedResponse = response.body();
+            if (decodedResponse == null) return;
+            List<Movie> listWithFixedUrls = fixImageUrls(decodedResponse.results);
 
-            @Override
-            public void onFailure(@NonNull Call<MovieResponse> call, @NonNull Throwable t) {
-                movies.postValue(new ArrayList<>());
-                Log.d(TAG, "provides empty list");
-                Log.d(TAG, t.getMessage());
+            if(type==POPULAR) {
+                Log.d("EnqueueMovies", "Successful response for Popular movies!");
+                cache.putPopular(listWithFixedUrls);
+            } else {
+                Log.d("EnqueueMovies", "Successful response for Top Rated movies!");
+                cache.putTopRated(listWithFixedUrls);
             }
-        });
 
-    }
-
-    private void saveMovieCacheToDisk(List<Movie> results) {
-
-        deleteOldCache();
-
-        ContentValues[] cv = new ContentValues[results.size()];
-        int index = 0;
-        for (Movie movie : results) {
-            ContentValues contentValues = getMovieContentValues(movie);
-            cv[index++] = contentValues;
+            movies.postValue(listWithFixedUrls);
         }
 
-        int inserted = contentResolver.bulkInsert(TopMoviesEntry.CONTENT_URI, cv);
 
-        Log.d(TAG, "Inserted " + inserted + " rows into DiskCache");
-    }
-
-    private void deleteOldCache() {
-        int deleted;
-
-        deleted = contentResolver.delete(TopMoviesEntry.CONTENT_URI, null, null);
-
-        Log.d(TAG, "Deleted: " + deleted + " from DiskCache");
-    }
-
-    private void mapMovies(List<Movie> results) {
-        movieCache = new HashMap<>();
-
-        for (Movie movie : results) {
-            movieCache.put(movie.id, movie);
+        @Override
+        public void onFailure(@NonNull Call<MovieResponse> call, @NonNull Throwable t) {
+            Log.d(TAG, "provides empty list");
+            Log.d(TAG, t.getMessage());
         }
+    }
+
+
+
+    private static final String IMAGE_PATH = "http://image.tmdb.org/t/p/w185/";
+    /**
+     * Completing image urls in data received from the API
+     *
+     * @param movies list of movies obtained from the API
+     * @return list of movies with amended URLs
+     */
+    private List<Movie> fixImageUrls(List<Movie> movies) {
+
+        if(movies!=null) {
+            for (Movie movie : movies) {
+                movie.posterPath = IMAGE_PATH.concat(movie.posterPath);
+            }
+        }
+        return movies;
     }
 
     private MoviesWebService getMoviesWebService() {
@@ -316,9 +413,9 @@ public class MovieRepository {
 
     public void addToFavorites(int movieId) {
 
-        if (movieCache != null) {
+        Movie movie = cache.get(movieId);
+        if (movie != null) {
             Uri uri = ContentUris.withAppendedId(DataContract.FavoriteMoviesEntry.CONTENT_URI, movieId);
-            Movie movie = movieCache.get(movieId);
 
             ContentValues contentValues = getMovieContentValues(movie);
 
@@ -357,7 +454,7 @@ public class MovieRepository {
     @SuppressLint("StaticFieldLeak")
     private void fetchFavoriteMovies(String sortOrder) {
 
-        new AsyncTask<String,Void,List<Movie>>() {
+        new AsyncTask<String, Void, List<Movie>>() {
 
             @Override
             protected List<Movie> doInBackground(String... strings) {
@@ -371,7 +468,7 @@ public class MovieRepository {
             @Override
             protected void onPostExecute(List<Movie> movies) {
                 MovieRepository.this.favoriteMovies.postValue(movies);
-                mapMovies(movies);
+                cache.put(movies);
             }
         }.execute(sortOrder);
     }
@@ -394,7 +491,6 @@ public class MovieRepository {
 
         return movieList;
     }
-
 
     public LiveData<List<Movie>> getPopularFavorites() {
         if (favoriteMovies == null) {
@@ -436,18 +532,8 @@ public class MovieRepository {
         return isFavorite;
     }
 
-    public LiveData<Movie> getMovie(Integer input) {
+    public LiveData<Movie> getCachedMovie(Integer input) {
 
-        if (movie == null) {
-            movie = new MutableLiveData<>();
-        }
-
-        movie.setValue(movieCache.get(input));
-
-        return movie;
-    }
-
-    public void clearDiskCache() {
-        deleteOldCache();
+        return cache.getCachedMovie(input);
     }
 }

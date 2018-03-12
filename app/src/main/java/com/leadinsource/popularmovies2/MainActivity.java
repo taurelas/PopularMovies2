@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        viewModel.clearState();
+        viewModel.clearCache();
         super.finish();
     }
 }

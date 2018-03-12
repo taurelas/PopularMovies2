@@ -73,7 +73,7 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         if(item.getItemId()==android.R.id.home) {
-            NavUtils.navigateUpFromSameTask(this);
+            finish();
         }
 
         return true;
@@ -92,6 +92,4 @@ public class DetailActivity extends AppCompatActivity {
             onPrepareOptionsMenu(menu);
         });
     }
-
-
 }
