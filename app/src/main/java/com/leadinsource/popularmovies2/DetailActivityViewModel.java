@@ -1,20 +1,20 @@
 package com.leadinsource.popularmovies2;
 
 import android.app.Application;
-import android.arch.core.util.Function;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
-import android.arch.lifecycle.ViewModel;
-import android.content.ContentResolver;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,8 +23,15 @@ import java.util.List;
 
 public class DetailActivityViewModel extends AndroidViewModel {
 
+    private static final String MOVIE_EXTRA = "movie_extra";
+    public static final String TRAILER_EXTRA = "trailer_extra";
+    private static final String REVIEWS_EXTRA = "reviews_extra";
+    private static final String FAVORITE_EXTRA = "favorite_extra";
+    private static final String TAG = DetailActivityViewModel.class.getSimpleName();
     private LiveData<Boolean> isFavorite;
+    private MutableLiveData<Boolean> isFavoriteCache;
     private LiveData<List<Video>> trailers;
+    private MutableLiveData<List<Video>> trailersCache;
     private MutableLiveData<Integer> movieId;
     private LiveData<List<Review>> reviews;
     private MovieRepository movieRepository;
@@ -41,9 +48,25 @@ public class DetailActivityViewModel extends AndroidViewModel {
 
     }
 
+    /**
+     * Initializes view model and restores settings if anything of value in the bundle
+     * @param savedInstanceState
+     */
+    void init(Bundle savedInstanceState) {
+        if(savedInstanceState!=null) {
+            Log.d(TAG, "Restoring state");
+
+            movieRepository.setTrailers(savedInstanceState.getParcelableArrayList(TRAILER_EXTRA));
+            movieRepository.setReviews(savedInstanceState.getParcelableArrayList(REVIEWS_EXTRA));
+            movieRepository.setMovie(savedInstanceState.getParcelable(MOVIE_EXTRA));
+            movieRepository.setFavorite(savedInstanceState.getBoolean(FAVORITE_EXTRA));
+
+        }
+    }
+
     LiveData<Movie> getMovie() {
         if(movie==null) {
-            movie = Transformations.switchMap(movieId, input -> movieRepository.getMovie(input));
+            movie = Transformations.switchMap(movieId, input -> movieRepository.getCachedMovie(input));
         }
 
         return movie;
@@ -55,7 +78,15 @@ public class DetailActivityViewModel extends AndroidViewModel {
      */
     @NonNull
     LiveData<Boolean> isFavorite() {
+        if(isFavoriteCache!= null) {
+            return isFavoriteCache;
+        } else {
+            return isFavoriteNetwork();
+        }
 
+    }
+
+    LiveData<Boolean> isFavoriteNetwork() {
         if(isFavorite==null) {
             isFavorite = Transformations.switchMap(movieId, input ->
                     movieRepository.isFavorite(input));
@@ -82,15 +113,6 @@ public class DetailActivityViewModel extends AndroidViewModel {
      * @return list of trailers wrapped in LiveData
      */
     LiveData<List<Video>> getTrailers() {
-        return Transformations.map(getTrailersWhenIdChanged(),
-                this::fixYouTubeUrls);
-    }
-
-    /**
-     * Fetches trailers from the repo when movieId changes
-     * @return list of trailers wrapped in LiveData
-     */
-    private LiveData<List<Video>> getTrailersWhenIdChanged() {
         if(trailers==null) {
 
             trailers = Transformations.switchMap(movieId,
@@ -98,6 +120,7 @@ public class DetailActivityViewModel extends AndroidViewModel {
         }
 
         return trailers;
+
     }
 
     void setMovieId(int movieId) {
@@ -108,16 +131,6 @@ public class DetailActivityViewModel extends AndroidViewModel {
         this.movieId.postValue(movieId);
     }
 
-    private List<Video> fixYouTubeUrls(List<Video> videos) {
-        String YT_PATH = "https://www.youtube.com/watch?v=";
-
-        for (Video video : videos) {
-            video.key = YT_PATH.concat(video.key);
-        }
-
-        return videos;
-    }
-
     public LiveData<List<Review>> getReviews() {
         if(reviews== null) {
             reviews = Transformations.switchMap(movieId,
@@ -125,5 +138,16 @@ public class DetailActivityViewModel extends AndroidViewModel {
         }
 
         return reviews;
+    }
+
+    public void saveState(Bundle outState) {
+        outState.putParcelable(MOVIE_EXTRA, movie.getValue());
+        outState.putParcelableArrayList(TRAILER_EXTRA, (ArrayList<Video>) trailers.getValue());
+        outState.putParcelableArrayList(REVIEWS_EXTRA, (ArrayList<Review>) reviews.getValue());
+        outState.putBoolean(FAVORITE_EXTRA, isFavorite.getValue());
+    }
+
+    public void clearCache() {
+        movieRepository.clearMovieDetailCache();
     }
 }

@@ -1,16 +1,19 @@
 package com.leadinsource.popularmovies2;
 
 import android.app.Application;
+import android.arch.core.util.Function;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Transformations;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.repository.MovieRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,11 +24,15 @@ public class MainActivityViewModel extends AndroidViewModel {
 
     private static final String EXTRA_SORT_ORDER = "SORT_ORDER";
     private static final String EXTRA_LIST_TYPE = "LIST_TYPE";
+    private static final String EXTRA_MOVIES = "EXTRA_MOVIES";
+    public static final String TAG = MainActivityViewModel.class.getSimpleName();
     private SortOrder sortOrder;
     private ListType movieListType;
     private final MovieRepository movieRepository;
     private final Resources resources;
     private LiveData<List<Movie>> movies;
+    private MutableLiveData<List<Movie>> movieCache;
+    private List<Movie> cachedList;
 
     public MainActivityViewModel(Application application) {
         super(application);
@@ -38,10 +45,18 @@ public class MainActivityViewModel extends AndroidViewModel {
      * @param savedInstanceState
      */
     void init(Bundle savedInstanceState) {
+
         if(savedInstanceState!=null) {
+            Log.d(TAG, "restoring state");
             sortOrder = new SortOrder(savedInstanceState.getInt(EXTRA_SORT_ORDER, SortOrder.MOST_POPULAR));
             movieListType = new ListType(savedInstanceState.getInt(EXTRA_LIST_TYPE, ListType.TOP_MOVIES));
+            cachedList = savedInstanceState.getParcelableArrayList(EXTRA_MOVIES);
+            if(movieCache==null) {
+                movieCache = new MutableLiveData<>();
+            }
+            movieCache.setValue(cachedList);
         } else {
+            Log.d(TAG, "fresh start");
             sortOrder = new SortOrder(SortOrder.MOST_POPULAR);
             movieListType = new ListType(SortOrder.MOST_POPULAR);
         }
@@ -56,7 +71,7 @@ public class MainActivityViewModel extends AndroidViewModel {
         return sortOrder.getCurrentText();
     }
 
-    /**
+      /**
      * This is a single access point for MainActivity for movie data, point where last Transformations
      * take place. At this stage it includes provision of Top Movies or Favorite Movies based
      * on the current user choice
@@ -64,20 +79,34 @@ public class MainActivityViewModel extends AndroidViewModel {
      * @return Observable LiveData with list of Movies either from local DB or The Movie DB
      */
     LiveData<List<Movie>> getMoviesData() {
-        if (movies != null && movies.getValue() != null && movies.getValue().size() > 0) {
-            return movies;
+
+        if (movies == null) {
+
+            movies = new MutableLiveData<>();
         }
 
+        Log.d(TAG, "getMoviesData: ?");
+
+        movies = getMoviesFromRepo();
+
+        return movies;
+    }
+
+    private LiveData<List<Movie>> getMoviesFromRepo() {
         movies = Transformations.switchMap(movieListType.getCurrent(), input -> {
             if (input == ListType.TOP_MOVIES) {
+                Log.d(TAG, "Fetching top movies from repo");
+
                 return getTopMovies();
             } else {
+                Log.d(TAG, "Fetching favorite movies from repo");
                 return getFavoriteMovies();
             }
         });
 
         return movies;
     }
+
 
     /**
      * Provides either a list of most popular movies or best rated from The Movie DB
@@ -87,9 +116,9 @@ public class MainActivityViewModel extends AndroidViewModel {
     private LiveData<List<Movie>> getTopMovies() {
         return Transformations.switchMap(sortOrder.getCurrent(), input -> {
             if (input == SortOrder.MOST_POPULAR) {
-                return getPopularMovies();
+                return movieRepository.fetchPopularMovies();
             } else {
-                return getTopRatedMovies();
+                return movieRepository.fetchTopRatedMovies();
             }
         });
     }
@@ -107,43 +136,6 @@ public class MainActivityViewModel extends AndroidViewModel {
                 return movieRepository.getTopRatedFavorites();
             }
         });
-    }
-
-    /**
-     * Get popular movies list from repository, amending the url in the process
-     *
-     * @return LiveData object to be transformed accordingly before passing to MainActivity
-     */
-    private LiveData<List<Movie>> getPopularMovies() {
-        return Transformations.map(movieRepository.fetchPopularMovies(),
-                this::fixImageUrls);
-    }
-
-    /**
-     * Get top rated movies list from repository, amending the url in the process
-     *
-     * @return LiveData object that can be observed by MainActivity
-     */
-
-    private LiveData<List<Movie>> getTopRatedMovies() {
-        return Transformations.map(movieRepository.fetchTopRatedMovies(),
-                this::fixImageUrls);
-    }
-
-    private static final String IMAGE_PATH = "http://image.tmdb.org/t/p/w185/";
-
-    /**
-     * Completing image urls in data received from the API
-     *
-     * @param movies list of movies obtained from the API
-     * @return list of movies with amended URLs
-     */
-    private List<Movie> fixImageUrls(List<Movie> movies) {
-        for (Movie movie : movies) {
-            movie.posterPath = IMAGE_PATH.concat(movie.posterPath);
-        }
-
-        return movies;
     }
 
     /**
@@ -174,11 +166,11 @@ public class MainActivityViewModel extends AndroidViewModel {
     void saveState(Bundle outState) {
         outState.putInt(EXTRA_SORT_ORDER, sortOrder.getCurrent().getValue());
         outState.putInt(EXTRA_LIST_TYPE, movieListType.getCurrent().getValue());
-
+        outState.putParcelableArrayList(EXTRA_MOVIES, (ArrayList<Movie>) movies.getValue());
     }
 
-    public void clearState() {
-        movieRepository.clearDiskCache();
+    public void clearCache() {
+        movieRepository.clearMovieDetailCache();
     }
 
     /**

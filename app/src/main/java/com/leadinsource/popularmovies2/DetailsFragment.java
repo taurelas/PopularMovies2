@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.squareup.picasso.Picasso;
  */
 public class DetailsFragment extends Fragment {
 
+    private static final String TAG = DetailsFragment.class.getSimpleName();
     private DetailActivityViewModel viewModel;
     private FragmentDetailsBinding binding;
 
@@ -44,6 +46,8 @@ public class DetailsFragment extends Fragment {
 
         viewModel = ViewModelProviders.of(getActivity()).get(DetailActivityViewModel.class);
 
+        viewModel.init(savedInstanceState);
+
         viewModel.getMovie().observe(this, movie -> {
             Picasso.with(getContext()).load(movie.posterPath).into(binding.ivPoster);
             binding.tvTitle.setText(movie.title);
@@ -56,5 +60,10 @@ public class DetailsFragment extends Fragment {
         return binding.getRoot();
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "saving state");
+        viewModel.saveState(outState);
+        super.onSaveInstanceState(outState);
+    }
 }

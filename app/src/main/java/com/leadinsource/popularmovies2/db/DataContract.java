@@ -41,4 +41,5 @@ public class DataContract {
             public static final Uri CONTENT_URI =
                     BASE_CONTENT_URI.buildUpon().appendPath(PATH_TOP_MOVIES).build();
         }
+
 }
