@@ -1,9 +1,7 @@
 package com.leadinsource.popularmovies2.repository;
 
-import android.arch.core.util.Function;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.Transformations;
 
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.model.Review;
@@ -13,12 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by Matt on 08/03/2018.
+ * Provides in-memory caching to MovieRepository
  */
 
-public class Cache {
+class Cache {
 
-    private List<Movie> cachedList;
     private MutableLiveData<List<Movie>> cachedMovies;
     private MutableLiveData<List<Movie>> cachedPopularMovies;
     private MutableLiveData<List<Movie>> cachedTopRatedMovies;
@@ -33,10 +30,6 @@ public class Cache {
     private MutableLiveData<List<Review>> reviewsCached;
     private MutableLiveData<Integer> currentMovieId;
 
-    void put(LiveData<List<Movie>> listToStore) {
-        cachedList = listToStore.getValue();
-    }
-
     void put(Movie movie) {
         if (movieCached == null) {
             movieCached = new MutableLiveData<>();
@@ -50,10 +43,6 @@ public class Cache {
 
     }
 
-    LiveData<List<Movie>> getCachedMovies() {
-        return cachedMovies;
-    }
-
     LiveData<List<Movie>> getCachedPopularMovies() {
         return cachedPopularMovies;
     }
@@ -62,13 +51,8 @@ public class Cache {
         return cachedTopRatedMovies;
     }
 
-
-    LiveData<Movie> getCachedMovie() {
-        return movieCached;
-    }
-
     void put(List<Movie> movies) {
-        cachedList = movies;
+
         if (cachedMovies == null) {
             cachedMovies = new MutableLiveData<>();
         }
@@ -151,7 +135,8 @@ public class Cache {
         if (reviewsCached == null) {
             reviewsCached = new MutableLiveData<>();
         }
-        //adding reviews to the hashmap
+
+        //adding reviews to the hash map
         reviewsCacheMap.put(currentMovieId.getValue(), reviews);
 
         reviewsCached.postValue(reviews);

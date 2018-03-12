@@ -1,7 +1,6 @@
 package com.leadinsource.popularmovies2;
 
 import android.app.Application;
-import android.arch.core.util.Function;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
@@ -25,14 +24,13 @@ public class MainActivityViewModel extends AndroidViewModel {
     private static final String EXTRA_SORT_ORDER = "SORT_ORDER";
     private static final String EXTRA_LIST_TYPE = "LIST_TYPE";
     private static final String EXTRA_MOVIES = "EXTRA_MOVIES";
-    public static final String TAG = MainActivityViewModel.class.getSimpleName();
+    private static final String TAG = MainActivityViewModel.class.getSimpleName();
     private SortOrder sortOrder;
     private ListType movieListType;
     private final MovieRepository movieRepository;
     private final Resources resources;
     private LiveData<List<Movie>> movies;
     private MutableLiveData<List<Movie>> movieCache;
-    private List<Movie> cachedList;
 
     public MainActivityViewModel(Application application) {
         super(application);
@@ -50,7 +48,7 @@ public class MainActivityViewModel extends AndroidViewModel {
             Log.d(TAG, "restoring state");
             sortOrder = new SortOrder(savedInstanceState.getInt(EXTRA_SORT_ORDER, SortOrder.MOST_POPULAR));
             movieListType = new ListType(savedInstanceState.getInt(EXTRA_LIST_TYPE, ListType.TOP_MOVIES));
-            cachedList = savedInstanceState.getParcelableArrayList(EXTRA_MOVIES);
+            List<Movie> cachedList = savedInstanceState.getParcelableArrayList(EXTRA_MOVIES);
             if(movieCache==null) {
                 movieCache = new MutableLiveData<>();
             }

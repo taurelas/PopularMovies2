@@ -15,7 +15,6 @@ import android.util.Log;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.leadinsource.popularmovies2.BuildConfig;
 import com.leadinsource.popularmovies2.db.DataContract;
-import com.leadinsource.popularmovies2.db.DataContract.TopMoviesEntry;
 import com.leadinsource.popularmovies2.model.Movie;
 import com.leadinsource.popularmovies2.model.Review;
 import com.leadinsource.popularmovies2.model.Video;
@@ -85,8 +84,6 @@ public class MovieRepository {
             movies = new MutableLiveData<>();
         }
 
-
-
         //async request
         requestMoviesFromAPI(call, POPULAR);
 
@@ -139,71 +136,9 @@ public class MovieRepository {
         this.isFavorite.setValue(aBoolean);
     }
 
-    public LiveData<List<Movie>> setMovies(List<Movie> movies) {
-        if(this.movies==null) {
-            this.movies = new MutableLiveData<>();
-        }
-
-        this.movies.postValue(movies);
-        return this.movies;
-    }
-
-    public LiveData<List<Movie>> setFavoriteMovies(List<Movie> movies) {
-        this.favoriteMovies.setValue(movies);
-        return this.favoriteMovies;
-    }
-
-    public LiveData<List<Movie>> getMovies() {
-        if(movies==null)
-            movies = new MutableLiveData<>();
-
-        return movies;
-    }
-
     public void clearMovieDetailCache() {
         cache.clearMovieDetails();
     }
-
-    // partly based on
-    // https://medium.com/google-developers/lifecycle-aware-data-loading-with-android-architecture-components-f95484159de4
-    class DbTopMoviesTask extends AsyncTask<Call, Void, List<Movie>> {
-
-        Call<MovieResponse> call;
-
-        @Override
-        protected List<Movie> doInBackground(Call[] calls) {
-            this.call = calls[0];
-            return getTopMoviesFromDB();
-        }
-
-        @Override
-        protected void onPostExecute(List<Movie> movies) {
-            if (movies != null) {
-                MovieRepository.this.movies.setValue(movies);
-                cache.put(movies);
-            } else {
-                requestMoviesFromAPI(call, POPULAR);
-            }
-        }
-    }
-
-    private List<Movie> getTopMoviesFromDB() {
-
-        Uri uri = TopMoviesEntry.CONTENT_URI;
-
-        Cursor cursor = contentResolver.query(uri, null, null, null, null);
-
-        if (cursor.getCount() <= 0) {
-            return null;
-        }
-
-        List<Movie> result = getMoviesFromCursor(cursor);
-
-        cache.put(result);
-
-        return result;
-    }
-
 
     public LiveData<List<Video>> fetchTrailers(int movieId) {
 
@@ -324,8 +259,8 @@ public class MovieRepository {
         return videos;
     }
 
-    public static final int POPULAR = 1;
-    public static final int TOP_RATED = 2;
+    private static final int POPULAR = 1;
+    private static final int TOP_RATED = 2;
 
     private void requestMoviesFromAPI(Call<MovieResponse> call, int type) {
         call.enqueue(new aCallback(type));
@@ -421,12 +356,12 @@ public class MovieRepository {
 
             uri = contentResolver.insert(uri, contentValues);
 
-            Log.d(TAG, "Added to favs: " + uri.toString());
+            Log.d(TAG, "Added to favorites: " + uri.toString());
             isFavorite.postValue(true);
         }
     }
 
-    ContentValues getMovieContentValues(Movie movie) {
+    private ContentValues getMovieContentValues(Movie movie) {
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(DataContract.FavoriteMoviesEntry.MOVIE_ID, movie.id);
